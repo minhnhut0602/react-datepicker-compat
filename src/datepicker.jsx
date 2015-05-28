@@ -7,6 +7,7 @@ var moment = require('moment');
 var clone = require('clone');
 
 var DatePicker = React.createClass({
+  
   getDefaultProps: function() {
     return {
       weekdays: [moment.weekdaysMin()[0], moment.weekdaysMin()[1], moment.weekdaysMin()[2], moment.weekdaysMin()[3], moment.weekdaysMin()[4], moment.weekdaysMin()[5], moment.weekdaysMin()[6]],

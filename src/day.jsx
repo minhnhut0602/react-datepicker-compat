@@ -22,7 +22,7 @@ var Day = React.createClass({
     if (this.props.day.sameDay(this.props.selected))
       classes.push('datepicker__day--selected');
 
-    if (this.props.day.sameDay(moment()))
+    if (this.props.day.sameDay(this.props.day.moment()))
       classes.push('datepicker__day--today');
 
     if (this.isWeekend()) {

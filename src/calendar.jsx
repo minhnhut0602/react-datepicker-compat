@@ -103,7 +103,7 @@ var Calendar = React.createClass({
       <Day
         key={key}
         day={day}
-        moment={this.props.moment}
+        moment={this.state.moment}
         locale={this.props.locale}
         date={this.state.date}
         onClick={this.handleDayClick.bind(this, day)}
