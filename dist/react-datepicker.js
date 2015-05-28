@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("react"), require("moment"), require("react-onclickoutside"));
+		module.exports = factory(require("react"), require("react-onclickoutside"), require("moment"));
 	else if(typeof define === 'function' && define.amd)
-		define(["react", "moment", "react-onclickoutside"], factory);
+		define(["react", "react-onclickoutside", "moment"], factory);
 	else if(typeof exports === 'object')
-		exports["DatePicker"] = factory(require("react"), require("moment"), require("react-onclickoutside"));
+		exports["DatePicker"] = factory(require("react"), require("react-onclickoutside"), require("moment"));
 	else
-		root["DatePicker"] = factory(root["React"], root["moment"], root["OnClickOutside"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_6__) {
+		root["DatePicker"] = factory(root["React"], root["OnClickOutside"], root["moment"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_8__, __WEBPACK_EXTERNAL_MODULE_10__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -56,29 +56,35 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var React = __webpack_require__(2);
-	var Popover = __webpack_require__(7);
-	var DateUtil = __webpack_require__(5);
-	var Calendar = __webpack_require__(1);
+	var React = __webpack_require__(1);
+	var Popover = __webpack_require__(2);
+	var DateUtil = __webpack_require__(4);
+	var Calendar = __webpack_require__(5);
 	var DateInput = __webpack_require__(9);
-	var moment = __webpack_require__(4);
+	var moment = __webpack_require__(10);
+	var clone = __webpack_require__(7);
 
 	var DatePicker = React.createClass({
 	  displayName: "DatePicker",
 
 	  getDefaultProps: function getDefaultProps() {
 	    return {
-	      weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-	      locale: "en",
-	      dateFormatCallendar: "MMMM YYYY",
-	      moment: moment
+	      weekdays: [moment.weekdaysMin()[0], moment.weekdaysMin()[1], moment.weekdaysMin()[2], moment.weekdaysMin()[3], moment.weekdaysMin()[4], moment.weekdaysMin()[5], moment.weekdaysMin()[6]],
+	      locale: "nb",
+	      dateFormatCallendar: "MMMM YYYY"
 	    };
 	  },
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      focus: false
+	      focus: false,
+	      moment: moment
 	    };
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var newMoment = clone(moment);
+	    newMoment.locale(this.props.locale);
+	    this.setState({ moment: newMoment });
 	  },
 
 	  handleFocus: function handleFocus() {
@@ -118,6 +124,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  calendar: function calendar() {
+
 	    if (this.state.focus) {
 	      return React.createElement(
 	        Popover,
@@ -125,7 +132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        React.createElement(Calendar, {
 	          weekdays: this.props.weekdays,
 	          locale: this.props.locale,
-	          moment: this.props.moment,
+	          moment: this.state.moment,
 	          dateFormat: this.props.dateFormatCallendar,
 	          selected: this.props.selected,
 	          onSelect: this.handleSelect,
@@ -138,13 +145,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  render: function render() {
-
 	    return React.createElement(
 	      "div",
 	      null,
 	      React.createElement(DateInput, {
 	        name: this.props.name,
 	        date: this.props.selected,
+	        locale: this.props.locale,
+	        moment: this.state.moment,
 	        dateFormat: this.props.dateFormat,
 	        focus: this.state.focus,
 	        onFocus: this.handleFocus,
@@ -165,327 +173,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-
-	var React = __webpack_require__(2);
-	var Day = __webpack_require__(3);
-	var DateUtil = __webpack_require__(5);
-
-	var Calendar = React.createClass({
-	  displayName: "Calendar",
-
-	  mixins: [__webpack_require__(6)],
-
-	  handleClickOutside: function handleClickOutside() {
-	    this.props.hideCalendar();
-	  },
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      date: new DateUtil(this.props.selected).safeClone(this.props.moment())
-	    };
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      weekStart: 1
-	    };
-	  },
-
-	  componentWillMount: function componentWillMount() {
-	    this.initializeMomentLocale();
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    if (nextProps.selected === null) {
-	      return;
-	    }
-
-	    // When the selected date changed
-	    if (nextProps.selected !== this.props.selected) {
-	      this.setState({
-	        date: new DateUtil(nextProps.selected).clone()
-	      });
-	    }
-	  },
-
-	  initializeMomentLocale: function initializeMomentLocale() {
-	    var weekdays = this.props.weekdays.slice(0);
-	    weekdays = weekdays.concat(weekdays.splice(0, this.props.weekStart));
-
-	    this.props.moment.locale(this.props.locale, {
-	      week: {
-	        dow: this.props.weekStart
-	      },
-	      weekdaysMin: weekdays
-	    });
-	  },
-
-	  increaseMonth: function increaseMonth() {
-	    this.setState({
-	      date: this.state.date.addMonth()
-	    });
-	  },
-
-	  decreaseMonth: function decreaseMonth() {
-	    this.setState({
-	      date: this.state.date.subtractMonth()
-	    });
-	  },
-
-	  weeks: function weeks() {
-	    return this.state.date.mapWeeksInMonth(this.renderWeek);
-	  },
-
-	  handleDayClick: function handleDayClick(day) {
-	    this.props.onSelect(day);
-	  },
-
-	  renderWeek: function renderWeek(weekStart, key) {
-	    if (!weekStart.weekInMonth(this.state.date)) {
-	      return;
-	    }
-
-	    return React.createElement(
-	      "div",
-	      { key: key },
-	      this.days(weekStart)
-	    );
-	  },
-
-	  renderDay: function renderDay(day, key) {
-	    var minDate = new DateUtil(this.props.minDate).safeClone(),
-	        maxDate = new DateUtil(this.props.maxDate).safeClone(),
-	        disabled = day.isBefore(minDate) || day.isAfter(maxDate);
-
-	    return React.createElement(Day, {
-	      key: key,
-	      day: day,
-	      date: this.state.date,
-	      onClick: this.handleDayClick.bind(this, day),
-	      selected: new DateUtil(this.props.selected),
-	      disabled: disabled });
-	  },
-
-	  days: function days(weekStart) {
-	    return weekStart.mapDaysInWeek(this.renderDay);
-	  },
-
-	  header: function header() {
-	    return this.props.moment.weekdaysMin().map(function (day, key) {
-	      return React.createElement(
-	        "div",
-	        { className: "datepicker__day", key: key },
-	        day
-	      );
-	    });
-	  },
-
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "datepicker" },
-	      React.createElement("div", { className: "datepicker__triangle" }),
-	      React.createElement(
-	        "div",
-	        { className: "datepicker__header" },
-	        React.createElement("a", { className: "datepicker__navigation datepicker__navigation--previous",
-	          onClick: this.decreaseMonth }),
-	        React.createElement(
-	          "span",
-	          { className: "datepicker__current-month" },
-	          this.state.date.localeFormat(this.props.locale, this.props.dateFormat)
-	        ),
-	        React.createElement("a", { className: "datepicker__navigation datepicker__navigation--next",
-	          onClick: this.increaseMonth }),
-	        React.createElement(
-	          "div",
-	          null,
-	          this.header()
-	        )
-	      ),
-	      React.createElement(
-	        "div",
-	        { className: "datepicker__month" },
-	        this.weeks()
-	      )
-	    );
-	  }
-	});
-
-	module.exports = Calendar;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
 
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
 	"use strict";
 
-	var React = __webpack_require__(2);
-	var moment = __webpack_require__(4);
-
-	var Day = React.createClass({
-	  displayName: "Day",
-
-	  handleClick: function handleClick(event) {
-	    if (this.props.disabled) {
-	      return;
-	    }this.props.onClick(event);
-	  },
-
-	  isWeekend: function isWeekend() {
-	    var weekday = this.props.day.moment().weekday();
-	    return weekday === 5 || weekday === 6;
-	  },
-
-	  render: function render() {
-	    var classes = ["datepicker__day"];
-
-	    if (this.props.disabled) classes.push("datepicker__day--disabled");
-
-	    if (this.props.day.sameDay(this.props.selected)) classes.push("datepicker__day--selected");
-
-	    if (this.props.day.sameDay(moment())) classes.push("datepicker__day--today");
-
-	    if (this.isWeekend()) {
-	      classes.push("datepicker__day--weekend");
-	    }
-
-	    return React.createElement(
-	      "div",
-	      { className: classes.join(" "), onClick: this.handleClick },
-	      this.props.day.day()
-	    );
-	  }
-	});
-
-	module.exports = Day;
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	function DateUtil(date) {
-	  this._date = date;
-	}
-
-	DateUtil.prototype.isBefore = function (other) {
-	  return this._date.isBefore(other._date, "day");
-	};
-
-	DateUtil.prototype.isAfter = function (other) {
-	  return this._date.isAfter(other._date, "day");
-	};
-
-	DateUtil.prototype.sameDay = function (other) {
-	  return this._date.isSame(other._date, "day");
-	};
-
-	DateUtil.prototype.sameMonth = function (other) {
-	  return this._date.isSame(other._date, "month");
-	};
-
-	DateUtil.prototype.day = function () {
-	  return this._date.date();
-	};
-
-	DateUtil.prototype.mapDaysInWeek = function (callback) {
-	  var week = [];
-	  var firstDay = this._date.clone();
-
-	  for (var i = 0; i < 7; i++) {
-	    var day = new DateUtil(firstDay.clone().add(i, "days"));
-
-	    week[i] = callback(day, i);
-	  }
-
-	  return week;
-	};
-
-	DateUtil.prototype.mapWeeksInMonth = function (callback) {
-	  var month = [];
-	  var firstDay = this._date.clone().startOf("month").startOf("week");
-
-	  for (var i = 0; i < 6; i++) {
-	    var weekStart = new DateUtil(firstDay.clone().add(i, "weeks"));
-
-	    month[i] = callback(weekStart, i);
-	  }
-
-	  return month;
-	};
-
-	DateUtil.prototype.weekInMonth = function (other) {
-	  var firstDayInWeek = this._date.clone();
-	  var lastDayInWeek = this._date.clone().weekday(7);
-
-	  return firstDayInWeek.isSame(other._date, "month") || lastDayInWeek.isSame(other._date, "month");
-	};
-
-	DateUtil.prototype.format = function () {
-	  return this._date.format.apply(this._date, arguments);
-	};
-
-	DateUtil.prototype.localeFormat = function () {
-	  var args = Array.prototype.slice.call(arguments);
-	  var locale = args.shift();
-	  return this._date.locale(locale).format.apply(this._date, args);
-	};
-
-	DateUtil.prototype.addMonth = function () {
-	  return new DateUtil(this._date.clone().add(1, "month"));
-	};
-
-	DateUtil.prototype.subtractMonth = function () {
-	  return new DateUtil(this._date.clone().subtract(1, "month"));
-	};
-
-	DateUtil.prototype.clone = function () {
-	  return new DateUtil(this._date.clone());
-	};
-
-	DateUtil.prototype.safeClone = function (alternative) {
-	  if (!!this._date) return this.clone();
-
-	  if (alternative === undefined) alternative = null;
-	  return new DateUtil(alternative);
-	};
-
-	DateUtil.prototype.moment = function () {
-	  return this._date;
-	};
-
-	module.exports = DateUtil;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(2);
+	var React = __webpack_require__(1);
 
 	var Popover = React.createClass({
+
 	  displayName: "Popover",
 
 	  componentWillMount: function componentWillMount() {
@@ -533,7 +232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this._tether != null) {
 	      this._tether.setOptions(this._tetherOptions());
 	    } else if (window && document) {
-	      var Tether = __webpack_require__(8);
+	      var Tether = __webpack_require__(3);
 	      this._tether = new Tether(this._tetherOptions());
 	    }
 	  },
@@ -554,7 +253,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Popover;
 
 /***/ },
-/* 8 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether 0.6.5 */
@@ -2017,17 +1716,506 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	function DateUtil(date) {
+	  this._date = date;
+	}
+
+	DateUtil.prototype.isBefore = function (other) {
+	  return this._date.isBefore(other._date, "day");
+	};
+
+	DateUtil.prototype.isAfter = function (other) {
+	  return this._date.isAfter(other._date, "day");
+	};
+
+	DateUtil.prototype.sameDay = function (other) {
+	  return this._date.isSame(other._date, "day");
+	};
+
+	DateUtil.prototype.sameMonth = function (other) {
+	  return this._date.isSame(other._date, "month");
+	};
+
+	DateUtil.prototype.day = function () {
+	  return this._date.date();
+	};
+
+	DateUtil.prototype.mapDaysInWeek = function (callback) {
+	  var week = [];
+	  var firstDay = this._date.clone();
+
+	  for (var i = 0; i < 7; i++) {
+	    var day = new DateUtil(firstDay.clone().add(i, "days"));
+
+	    week[i] = callback(day, i);
+	  }
+
+	  return week;
+	};
+
+	DateUtil.prototype.mapWeeksInMonth = function (callback) {
+	  var month = [];
+	  var firstDay = this._date.clone().startOf("month").startOf("week");
+
+	  for (var i = 0; i < 6; i++) {
+	    var weekStart = new DateUtil(firstDay.clone().add(i, "weeks"));
+
+	    month[i] = callback(weekStart, i);
+	  }
+
+	  return month;
+	};
+
+	DateUtil.prototype.weekInMonth = function (other) {
+	  var firstDayInWeek = this._date.clone();
+	  var lastDayInWeek = this._date.clone().weekday(7);
+
+	  return firstDayInWeek.isSame(other._date, "month") || lastDayInWeek.isSame(other._date, "month");
+	};
+
+	DateUtil.prototype.format = function () {
+	  return this._date.format.apply(this._date, arguments);
+	};
+
+	DateUtil.prototype.localeFormat = function () {
+	  var args = Array.prototype.slice.call(arguments);
+	  var locale = args.shift();
+	  return this._date.locale(locale).format.apply(this._date, args);
+	};
+
+	DateUtil.prototype.addMonth = function () {
+	  return new DateUtil(this._date.clone().add(1, "month"));
+	};
+
+	DateUtil.prototype.subtractMonth = function () {
+	  return new DateUtil(this._date.clone().subtract(1, "month"));
+	};
+
+	DateUtil.prototype.clone = function () {
+	  return new DateUtil(this._date.clone());
+	};
+
+	DateUtil.prototype.safeClone = function (alternative) {
+	  if (!!this._date) return this.clone();
+
+	  if (alternative === undefined) alternative = null;
+	  return new DateUtil(alternative);
+	};
+
+	DateUtil.prototype.moment = function () {
+	  return this._date;
+	};
+
+	module.exports = DateUtil;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var Day = __webpack_require__(6);
+	var DateUtil = __webpack_require__(4);
+	var cloneFunction = __webpack_require__(7);
+
+	var Calendar = React.createClass({
+	  displayName: "Calendar",
+
+	  mixins: [__webpack_require__(8)],
+
+	  propTypes: {
+	    weekStart: React.PropTypes.string,
+	    locale: React.PropTypes.string.isRequired,
+	    moment: React.PropTypes.func.isRequired
+	  },
+
+	  handleClickOutside: function handleClickOutside() {
+	    this.props.hideCalendar();
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      date: new DateUtil(this.props.selected).safeClone(this.props.moment())
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this.initializeMomentLocale();
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+
+	    if (!this.state.moment) {
+	      var newMoment = cloneFunction(nextProps.moment);
+	      newMoment.locale(nextProps.locale);
+	      this.setState({
+	        moment: newMoment,
+	        date: new DateUtil(this.props.selected).safeClone(newMoment())
+	      });
+	    }
+
+	    if (nextProps.selected === null) {
+	      return;
+	    }
+
+	    // When the selected date changed
+	    if (nextProps.selected !== this.props.selected) {
+	      this.setState({
+	        date: new DateUtil(nextProps.selected).clone()
+	      });
+	    }
+	  },
+
+	  initializeMomentLocale: function initializeMomentLocale() {
+
+	    var weekdays = this.props.weekdays.slice(0);
+	    weekdays = weekdays.concat(weekdays.splice(0, this.props.weekStart));
+	    if (this.state.moment) {
+	      this.state.moment.locale(this.props.locale, {
+	        week: {
+	          dow: this.props.weekStart
+	        },
+	        weekdaysMin: weekdays
+	      });
+	    }
+	  },
+
+	  increaseMonth: function increaseMonth() {
+	    this.setState({
+	      date: this.state.date.addMonth()
+	    });
+	  },
+
+	  decreaseMonth: function decreaseMonth() {
+	    this.setState({
+	      date: this.state.date.subtractMonth()
+	    });
+	  },
+
+	  weeks: function weeks() {
+	    return this.state.date.mapWeeksInMonth(this.renderWeek);
+	  },
+
+	  handleDayClick: function handleDayClick(day) {
+	    this.props.onSelect(day);
+	  },
+
+	  renderWeek: function renderWeek(weekStart, key) {
+	    if (!weekStart.weekInMonth(this.state.date)) {
+	      return;
+	    }
+
+	    return React.createElement(
+	      "div",
+	      { key: key },
+	      this.days(weekStart)
+	    );
+	  },
+
+	  renderDay: function renderDay(day, key) {
+	    var minDate = new DateUtil(this.props.minDate).safeClone(),
+	        maxDate = new DateUtil(this.props.maxDate).safeClone(),
+	        disabled = day.isBefore(minDate) || day.isAfter(maxDate);
+
+	    return React.createElement(Day, {
+	      key: key,
+	      day: day,
+	      moment: this.props.moment,
+	      locale: this.props.locale,
+	      date: this.state.date,
+	      onClick: this.handleDayClick.bind(this, day),
+	      selected: new DateUtil(this.props.selected),
+	      disabled: disabled });
+	  },
+
+	  days: function days(weekStart) {
+	    return weekStart.mapDaysInWeek(this.renderDay);
+	  },
+
+	  header: function header() {
+	    return this.props.moment.weekdaysMin().map(function (day, key) {
+	      return React.createElement(
+	        "div",
+	        { className: "datepicker__day", key: key },
+	        day
+	      );
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "datepicker" },
+	      React.createElement("div", { className: "datepicker__triangle" }),
+	      React.createElement(
+	        "div",
+	        { className: "datepicker__header" },
+	        React.createElement("a", { className: "datepicker__navigation datepicker__navigation--previous",
+	          onClick: this.decreaseMonth }),
+	        React.createElement(
+	          "span",
+	          { className: "datepicker__current-month" },
+	          this.state.date.localeFormat(this.props.locale, this.props.dateFormat)
+	        ),
+	        React.createElement("a", { className: "datepicker__navigation datepicker__navigation--next",
+	          onClick: this.increaseMonth }),
+	        React.createElement(
+	          "div",
+	          null,
+	          this.header()
+	        )
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "datepicker__month" },
+	        this.weeks()
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Calendar;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var Day = React.createClass({
+	  displayName: "Day",
+
+	  handleClick: function handleClick(event) {
+	    if (this.props.disabled) {
+	      return;
+	    }this.props.onClick(event);
+	  },
+
+	  isWeekend: function isWeekend() {
+	    var weekday = this.props.day.moment().weekday();
+	    return weekday === 5 || weekday === 6;
+	  },
+
+	  render: function render() {
+	    var classes = ["datepicker__day"];
+
+	    if (this.props.disabled) classes.push("datepicker__day--disabled");
+
+	    if (this.props.day.sameDay(this.props.selected)) classes.push("datepicker__day--selected");
+
+	    if (this.props.day.sameDay(moment())) classes.push("datepicker__day--today");
+
+	    if (this.isWeekend()) {
+	      classes.push("datepicker__day--weekend");
+	    }
+
+	    return React.createElement(
+	      "div",
+	      { className: classes.join(" "), onClick: this.handleClick },
+	      this.props.day.day()
+	    );
+	  }
+	});
+
+	module.exports = Day;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var clone = (function() {
+	'use strict';
+
+	/**
+	 * Clones (copies) an Object using deep copying.
+	 *
+	 * This function supports circular references by default, but if you are certain
+	 * there are no circular references in your object, you can save some CPU time
+	 * by calling clone(obj, false).
+	 *
+	 * Caution: if `circular` is false and `parent` contains circular references,
+	 * your program may enter an infinite loop and crash.
+	 *
+	 * @param `parent` - the object to be cloned
+	 * @param `circular` - set to true if the object to be cloned may contain
+	 *    circular references. (optional - true by default)
+	 * @param `depth` - set to a number if the object is only to be cloned to
+	 *    a particular depth. (optional - defaults to Infinity)
+	 * @param `prototype` - sets the prototype to be used when cloning an object.
+	 *    (optional - defaults to parent prototype).
+	*/
+	function clone(parent, circular, depth, prototype) {
+	  var filter;
+	  if (typeof circular === 'object') {
+	    depth = circular.depth;
+	    prototype = circular.prototype;
+	    filter = circular.filter;
+	    circular = circular.circular
+	  }
+	  // maintain two arrays for circular references, where corresponding parents
+	  // and children have the same index
+	  var allParents = [];
+	  var allChildren = [];
+
+	  var useBuffer = typeof Buffer != 'undefined';
+
+	  if (typeof circular == 'undefined')
+	    circular = true;
+
+	  if (typeof depth == 'undefined')
+	    depth = Infinity;
+
+	  // recurse this function so we don't reset allParents and allChildren
+	  function _clone(parent, depth) {
+	    // cloning null always returns null
+	    if (parent === null)
+	      return null;
+
+	    if (depth == 0)
+	      return parent;
+
+	    var child;
+	    var proto;
+	    if (typeof parent != 'object') {
+	      return parent;
+	    }
+
+	    if (clone.__isArray(parent)) {
+	      child = [];
+	    } else if (clone.__isRegExp(parent)) {
+	      child = new RegExp(parent.source, __getRegExpFlags(parent));
+	      if (parent.lastIndex) child.lastIndex = parent.lastIndex;
+	    } else if (clone.__isDate(parent)) {
+	      child = new Date(parent.getTime());
+	    } else if (useBuffer && Buffer.isBuffer(parent)) {
+	      child = new Buffer(parent.length);
+	      parent.copy(child);
+	      return child;
+	    } else {
+	      if (typeof prototype == 'undefined') {
+	        proto = Object.getPrototypeOf(parent);
+	        child = Object.create(proto);
+	      }
+	      else {
+	        child = Object.create(prototype);
+	        proto = prototype;
+	      }
+	    }
+
+	    if (circular) {
+	      var index = allParents.indexOf(parent);
+
+	      if (index != -1) {
+	        return allChildren[index];
+	      }
+	      allParents.push(parent);
+	      allChildren.push(child);
+	    }
+
+	    for (var i in parent) {
+	      var attrs;
+	      if (proto) {
+	        attrs = Object.getOwnPropertyDescriptor(proto, i);
+	      }
+
+	      if (attrs && attrs.set == null) {
+	        continue;
+	      }
+	      child[i] = _clone(parent[i], depth - 1);
+	    }
+
+	    return child;
+	  }
+
+	  return _clone(parent, depth);
+	}
+
+	/**
+	 * Simple flat clone using prototype, accepts only objects, usefull for property
+	 * override on FLAT configuration object (no nested props).
+	 *
+	 * USE WITH CAUTION! This may not behave as you wish if you do not know how this
+	 * works.
+	 */
+	clone.clonePrototype = function clonePrototype(parent) {
+	  if (parent === null)
+	    return null;
+
+	  var c = function () {};
+	  c.prototype = parent;
+	  return new c();
+	};
+
+	// private utility functions
+
+	function __objToStr(o) {
+	  return Object.prototype.toString.call(o);
+	};
+	clone.__objToStr = __objToStr;
+
+	function __isDate(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object Date]';
+	};
+	clone.__isDate = __isDate;
+
+	function __isArray(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object Array]';
+	};
+	clone.__isArray = __isArray;
+
+	function __isRegExp(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object RegExp]';
+	};
+	clone.__isRegExp = __isRegExp;
+
+	function __getRegExpFlags(re) {
+	  var flags = '';
+	  if (re.global) flags += 'g';
+	  if (re.ignoreCase) flags += 'i';
+	  if (re.multiline) flags += 'm';
+	  return flags;
+	};
+	clone.__getRegExpFlags = __getRegExpFlags;
+
+	return clone;
+	})();
+
+	if (typeof module === 'object' && module.exports) {
+	  module.exports = clone;
+	}
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_8__;
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var React = __webpack_require__(2);
-	var DateUtil = __webpack_require__(5);
-	var moment = __webpack_require__(4);
+	var React = __webpack_require__(1);
+	var DateUtil = __webpack_require__(4);
+	var cloneFunction = __webpack_require__(7);
 
 	var DateInput = React.createClass({
 	  displayName: "DateInput",
+
+	  propTypes: {
+	    locale: React.PropTypes.string,
+	    moment: React.PropTypes.func.isRequired
+	  },
 
 	  getDefaultProps: function getDefaultProps() {
 	    return {
@@ -2045,11 +2233,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.toggleFocus(this.props.focus);
 	  },
 
-	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
-	    this.toggleFocus(newProps.focus);
-
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.toggleFocus(nextProps.focus);
+	    var moment = cloneFunction(this.props.moment);
+	    moment.locale(nextProps.locale);
 	    this.setState({
-	      value: this.safeDateFormat(newProps.date)
+	      moment: moment,
+	      value: this.safeDateFormat(nextProps.date)
 	    });
 	  },
 
@@ -2062,7 +2252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  handleChange: function handleChange(event) {
-	    var date = moment(event.target.value, this.props.dateFormat, true);
+	    var date = this.state.moment(event.target.value, this.props.dateFormat, true);
 
 	    this.setState({
 	      value: event.target.value
@@ -2108,6 +2298,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	module.exports = DateInput;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_10__;
 
 /***/ }
 /******/ ])

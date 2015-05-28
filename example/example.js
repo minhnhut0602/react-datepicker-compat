@@ -20280,7 +20280,7 @@ var ExampleApp =
 
 	var React = __webpack_require__(1);
 	var DatePicker = __webpack_require__(157);
-	var moment = __webpack_require__(160);
+	var moment = __webpack_require__(166);
 
 	var exampleComponent = React.createClass({
 	  displayName: "exampleComponent",
@@ -20337,17 +20337,20 @@ var ExampleApp =
 	      React.createElement(DatePicker, {
 	        key: "example2",
 	        dateFormat: "YYYY/MM/DD",
+	        locale: "nb",
 	        selected: this.state.end_date,
 	        onChange: this.handleEndDateChange
 	      }),
 	      React.createElement(DatePicker, {
 	        key: "example3",
+	        locale: "nb",
 	        selected: this.state.new_date,
 	        onChange: this.handleNewDateChange,
 	        placeholderText: "Click to select a date"
 	      }),
 	      React.createElement(DatePicker, {
 	        key: "example4",
+	        locale: "nb",
 	        selected: this.state.bound_date,
 	        onChange: this.handleBoundDateChange,
 	        minDate: moment(),
@@ -20356,6 +20359,7 @@ var ExampleApp =
 	      }),
 	      React.createElement(DatePicker, {
 	        key: "example5",
+	        locale: "nb",
 	        selected: this.state.example5Selected,
 	        onChange: this.handleExample5Change,
 	        weekStart: "0",
@@ -20374,28 +20378,34 @@ var ExampleApp =
 	"use strict";
 
 	var React = __webpack_require__(1);
-	var Popover = __webpack_require__(248);
-	var DateUtil = __webpack_require__(246);
-	var Calendar = __webpack_require__(158);
-	var DateInput = __webpack_require__(250);
-	var moment = __webpack_require__(160);
+	var Popover = __webpack_require__(158);
+	var DateUtil = __webpack_require__(160);
+	var Calendar = __webpack_require__(161);
+	var DateInput = __webpack_require__(165);
+	var moment = __webpack_require__(166);
+	var clone = __webpack_require__(163);
 
 	var DatePicker = React.createClass({
 	  displayName: "DatePicker",
 
 	  getDefaultProps: function getDefaultProps() {
 	    return {
-	      weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-	      locale: "en",
-	      dateFormatCallendar: "MMMM YYYY",
-	      moment: moment
+	      weekdays: [moment.weekdaysMin()[0], moment.weekdaysMin()[1], moment.weekdaysMin()[2], moment.weekdaysMin()[3], moment.weekdaysMin()[4], moment.weekdaysMin()[5], moment.weekdaysMin()[6]],
+	      locale: "nb",
+	      dateFormatCallendar: "MMMM YYYY"
 	    };
 	  },
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      focus: false
+	      focus: false,
+	      moment: moment
 	    };
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var newMoment = clone(moment);
+	    newMoment.locale(this.props.locale);
+	    this.setState({ moment: newMoment });
 	  },
 
 	  handleFocus: function handleFocus() {
@@ -20435,6 +20445,7 @@ var ExampleApp =
 	  },
 
 	  calendar: function calendar() {
+
 	    if (this.state.focus) {
 	      return React.createElement(
 	        Popover,
@@ -20442,7 +20453,7 @@ var ExampleApp =
 	        React.createElement(Calendar, {
 	          weekdays: this.props.weekdays,
 	          locale: this.props.locale,
-	          moment: this.props.moment,
+	          moment: this.state.moment,
 	          dateFormat: this.props.dateFormatCallendar,
 	          selected: this.props.selected,
 	          onSelect: this.handleSelect,
@@ -20455,13 +20466,14 @@ var ExampleApp =
 	  },
 
 	  render: function render() {
-
 	    return React.createElement(
 	      "div",
 	      null,
 	      React.createElement(DateInput, {
 	        name: this.props.name,
 	        date: this.props.selected,
+	        locale: this.props.locale,
+	        moment: this.state.moment,
 	        dateFormat: this.props.dateFormat,
 	        focus: this.state.focus,
 	        onFocus: this.handleFocus,
@@ -20485,13 +20497,1658 @@ var ExampleApp =
 	"use strict";
 
 	var React = __webpack_require__(1);
-	var Day = __webpack_require__(159);
-	var DateUtil = __webpack_require__(246);
+
+	var Popover = React.createClass({
+
+	  displayName: "Popover",
+
+	  componentWillMount: function componentWillMount() {
+	    var popoverContainer = document.createElement("span");
+	    popoverContainer.className = "datepicker__container";
+
+	    this._popoverElement = popoverContainer;
+
+	    document.querySelector("body").appendChild(this._popoverElement);
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this._renderPopover();
+	  },
+
+	  componentDidUpdate: function componentDidUpdate() {
+	    this._renderPopover();
+	  },
+
+	  _popoverComponent: function _popoverComponent() {
+	    var className = this.props.className;
+	    return React.createElement(
+	      "div",
+	      { className: className },
+	      this.props.children
+	    );
+	  },
+
+	  _tetherOptions: function _tetherOptions() {
+	    return {
+	      element: this._popoverElement,
+	      target: this.getDOMNode().parentElement,
+	      attachment: "top left",
+	      targetAttachment: "bottom left",
+	      targetOffset: "10px 0",
+	      optimizations: {
+	        moveElement: false // always moves to <body> anyway!
+	      }
+	    };
+	  },
+
+	  _renderPopover: function _renderPopover() {
+	    React.render(this._popoverComponent(), this._popoverElement);
+
+	    if (this._tether != null) {
+	      this._tether.setOptions(this._tetherOptions());
+	    } else if (window && document) {
+	      var Tether = __webpack_require__(159);
+	      this._tether = new Tether(this._tetherOptions());
+	    }
+	  },
+
+	  componentWillUnmount: function componentWillUnmount() {
+	    this._tether.destroy();
+	    React.unmountComponentAtNode(this._popoverElement);
+	    if (this._popoverElement.parentNode) {
+	      this._popoverElement.parentNode.removeChild(this._popoverElement);
+	    }
+	  },
+
+	  render: function render() {
+	    return React.createElement("span", null);
+	  }
+	});
+
+	module.exports = Popover;
+
+/***/ },
+/* 159 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether 0.6.5 */
+
+
+	(function(root, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports === 'object') {
+	    module.exports = factory(require,exports,module);
+	  } else {
+	    root.Tether = factory();
+	  }
+	}(this, function(require,exports,module) {
+
+	(function() {
+	  var Evented, addClass, defer, deferred, extend, flush, getBounds, getClassName, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, setClassName, uniqueId, updateClasses, zeroPosCache,
+	    __hasProp = {}.hasOwnProperty,
+	    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+	    __slice = [].slice;
+
+	  if (this.Tether == null) {
+	    this.Tether = {
+	      modules: []
+	    };
+	  }
+
+	  getScrollParent = function(el) {
+	    var parent, position, scrollParent, style, _ref;
+	    position = getComputedStyle(el).position;
+	    if (position === 'fixed') {
+	      return el;
+	    }
+	    scrollParent = void 0;
+	    parent = el;
+	    while (parent = parent.parentNode) {
+	      try {
+	        style = getComputedStyle(parent);
+	      } catch (_error) {}
+	      if (style == null) {
+	        return parent;
+	      }
+	      if (/(auto|scroll)/.test(style['overflow'] + style['overflowY'] + style['overflowX'])) {
+	        if (position !== 'absolute' || ((_ref = style['position']) === 'relative' || _ref === 'absolute' || _ref === 'fixed')) {
+	          return parent;
+	        }
+	      }
+	    }
+	    return document.body;
+	  };
+
+	  uniqueId = (function() {
+	    var id;
+	    id = 0;
+	    return function() {
+	      return id++;
+	    };
+	  })();
+
+	  zeroPosCache = {};
+
+	  getOrigin = function(doc) {
+	    var id, k, node, v, _ref;
+	    node = doc._tetherZeroElement;
+	    if (node == null) {
+	      node = doc.createElement('div');
+	      node.setAttribute('data-tether-id', uniqueId());
+	      extend(node.style, {
+	        top: 0,
+	        left: 0,
+	        position: 'absolute'
+	      });
+	      doc.body.appendChild(node);
+	      doc._tetherZeroElement = node;
+	    }
+	    id = node.getAttribute('data-tether-id');
+	    if (zeroPosCache[id] == null) {
+	      zeroPosCache[id] = {};
+	      _ref = node.getBoundingClientRect();
+	      for (k in _ref) {
+	        v = _ref[k];
+	        zeroPosCache[id][k] = v;
+	      }
+	      defer(function() {
+	        return zeroPosCache[id] = void 0;
+	      });
+	    }
+	    return zeroPosCache[id];
+	  };
+
+	  node = null;
+
+	  getBounds = function(el) {
+	    var box, doc, docEl, k, origin, v, _ref;
+	    if (el === document) {
+	      doc = document;
+	      el = document.documentElement;
+	    } else {
+	      doc = el.ownerDocument;
+	    }
+	    docEl = doc.documentElement;
+	    box = {};
+	    _ref = el.getBoundingClientRect();
+	    for (k in _ref) {
+	      v = _ref[k];
+	      box[k] = v;
+	    }
+	    origin = getOrigin(doc);
+	    box.top -= origin.top;
+	    box.left -= origin.left;
+	    if (box.width == null) {
+	      box.width = document.body.scrollWidth - box.left - box.right;
+	    }
+	    if (box.height == null) {
+	      box.height = document.body.scrollHeight - box.top - box.bottom;
+	    }
+	    box.top = box.top - docEl.clientTop;
+	    box.left = box.left - docEl.clientLeft;
+	    box.right = doc.body.clientWidth - box.width - box.left;
+	    box.bottom = doc.body.clientHeight - box.height - box.top;
+	    return box;
+	  };
+
+	  getOffsetParent = function(el) {
+	    return el.offsetParent || document.documentElement;
+	  };
+
+	  getScrollBarSize = function() {
+	    var inner, outer, width, widthContained, widthScroll;
+	    inner = document.createElement('div');
+	    inner.style.width = '100%';
+	    inner.style.height = '200px';
+	    outer = document.createElement('div');
+	    extend(outer.style, {
+	      position: 'absolute',
+	      top: 0,
+	      left: 0,
+	      pointerEvents: 'none',
+	      visibility: 'hidden',
+	      width: '200px',
+	      height: '150px',
+	      overflow: 'hidden'
+	    });
+	    outer.appendChild(inner);
+	    document.body.appendChild(outer);
+	    widthContained = inner.offsetWidth;
+	    outer.style.overflow = 'scroll';
+	    widthScroll = inner.offsetWidth;
+	    if (widthContained === widthScroll) {
+	      widthScroll = outer.clientWidth;
+	    }
+	    document.body.removeChild(outer);
+	    width = widthContained - widthScroll;
+	    return {
+	      width: width,
+	      height: width
+	    };
+	  };
+
+	  extend = function(out) {
+	    var args, key, obj, val, _i, _len, _ref;
+	    if (out == null) {
+	      out = {};
+	    }
+	    args = [];
+	    Array.prototype.push.apply(args, arguments);
+	    _ref = args.slice(1);
+	    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+	      obj = _ref[_i];
+	      if (obj) {
+	        for (key in obj) {
+	          if (!__hasProp.call(obj, key)) continue;
+	          val = obj[key];
+	          out[key] = val;
+	        }
+	      }
+	    }
+	    return out;
+	  };
+
+	  removeClass = function(el, name) {
+	    var className, cls, _i, _len, _ref, _results;
+	    if (el.classList != null) {
+	      _ref = name.split(' ');
+	      _results = [];
+	      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+	        cls = _ref[_i];
+	        if (cls.trim()) {
+	          _results.push(el.classList.remove(cls));
+	        }
+	      }
+	      return _results;
+	    } else {
+	      className = getClassName(el).replace(new RegExp("(^| )" + (name.split(' ').join('|')) + "( |$)", 'gi'), ' ');
+	      return setClassName(el, className);
+	    }
+	  };
+
+	  addClass = function(el, name) {
+	    var cls, _i, _len, _ref, _results;
+	    if (el.classList != null) {
+	      _ref = name.split(' ');
+	      _results = [];
+	      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+	        cls = _ref[_i];
+	        if (cls.trim()) {
+	          _results.push(el.classList.add(cls));
+	        }
+	      }
+	      return _results;
+	    } else {
+	      removeClass(el, name);
+	      cls = getClassName(el) + (" " + name);
+	      return setClassName(el, cls);
+	    }
+	  };
+
+	  hasClass = function(el, name) {
+	    if (el.classList != null) {
+	      return el.classList.contains(name);
+	    } else {
+	      return new RegExp("(^| )" + name + "( |$)", 'gi').test(getClassName(el));
+	    }
+	  };
+
+	  getClassName = function(el) {
+	    if (el.className instanceof SVGAnimatedString) {
+	      return el.className.baseVal;
+	    } else {
+	      return el.className;
+	    }
+	  };
+
+	  setClassName = function(el, className) {
+	    return el.setAttribute('class', className);
+	  };
+
+	  updateClasses = function(el, add, all) {
+	    var cls, _i, _j, _len, _len1, _results;
+	    for (_i = 0, _len = all.length; _i < _len; _i++) {
+	      cls = all[_i];
+	      if (__indexOf.call(add, cls) < 0) {
+	        if (hasClass(el, cls)) {
+	          removeClass(el, cls);
+	        }
+	      }
+	    }
+	    _results = [];
+	    for (_j = 0, _len1 = add.length; _j < _len1; _j++) {
+	      cls = add[_j];
+	      if (!hasClass(el, cls)) {
+	        _results.push(addClass(el, cls));
+	      } else {
+	        _results.push(void 0);
+	      }
+	    }
+	    return _results;
+	  };
+
+	  deferred = [];
+
+	  defer = function(fn) {
+	    return deferred.push(fn);
+	  };
+
+	  flush = function() {
+	    var fn, _results;
+	    _results = [];
+	    while (fn = deferred.pop()) {
+	      _results.push(fn());
+	    }
+	    return _results;
+	  };
+
+	  Evented = (function() {
+	    function Evented() {}
+
+	    Evented.prototype.on = function(event, handler, ctx, once) {
+	      var _base;
+	      if (once == null) {
+	        once = false;
+	      }
+	      if (this.bindings == null) {
+	        this.bindings = {};
+	      }
+	      if ((_base = this.bindings)[event] == null) {
+	        _base[event] = [];
+	      }
+	      return this.bindings[event].push({
+	        handler: handler,
+	        ctx: ctx,
+	        once: once
+	      });
+	    };
+
+	    Evented.prototype.once = function(event, handler, ctx) {
+	      return this.on(event, handler, ctx, true);
+	    };
+
+	    Evented.prototype.off = function(event, handler) {
+	      var i, _ref, _results;
+	      if (((_ref = this.bindings) != null ? _ref[event] : void 0) == null) {
+	        return;
+	      }
+	      if (handler == null) {
+	        return delete this.bindings[event];
+	      } else {
+	        i = 0;
+	        _results = [];
+	        while (i < this.bindings[event].length) {
+	          if (this.bindings[event][i].handler === handler) {
+	            _results.push(this.bindings[event].splice(i, 1));
+	          } else {
+	            _results.push(i++);
+	          }
+	        }
+	        return _results;
+	      }
+	    };
+
+	    Evented.prototype.trigger = function() {
+	      var args, ctx, event, handler, i, once, _ref, _ref1, _results;
+	      event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+	      if ((_ref = this.bindings) != null ? _ref[event] : void 0) {
+	        i = 0;
+	        _results = [];
+	        while (i < this.bindings[event].length) {
+	          _ref1 = this.bindings[event][i], handler = _ref1.handler, ctx = _ref1.ctx, once = _ref1.once;
+	          handler.apply(ctx != null ? ctx : this, args);
+	          if (once) {
+	            _results.push(this.bindings[event].splice(i, 1));
+	          } else {
+	            _results.push(i++);
+	          }
+	        }
+	        return _results;
+	      }
+	    };
+
+	    return Evented;
+
+	  })();
+
+	  this.Tether.Utils = {
+	    getScrollParent: getScrollParent,
+	    getBounds: getBounds,
+	    getOffsetParent: getOffsetParent,
+	    extend: extend,
+	    addClass: addClass,
+	    removeClass: removeClass,
+	    hasClass: hasClass,
+	    updateClasses: updateClasses,
+	    defer: defer,
+	    flush: flush,
+	    uniqueId: uniqueId,
+	    Evented: Evented,
+	    getScrollBarSize: getScrollBarSize
+	  };
+
+	}).call(this);
+
+	(function() {
+	  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
+	    __slice = [].slice,
+	    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+	  if (this.Tether == null) {
+	    throw new Error("You must include the utils.js file before tether.js");
+	  }
+
+	  Tether = this.Tether;
+
+	  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize;
+
+	  within = function(a, b, diff) {
+	    if (diff == null) {
+	      diff = 1;
+	    }
+	    return (a + diff >= b && b >= a - diff);
+	  };
+
+	  transformKey = (function() {
+	    var el, key, _i, _len, _ref1;
+	    el = document.createElement('div');
+	    _ref1 = ['transform', 'webkitTransform', 'OTransform', 'MozTransform', 'msTransform'];
+	    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+	      key = _ref1[_i];
+	      if (el.style[key] !== void 0) {
+	        return key;
+	      }
+	    }
+	  })();
+
+	  tethers = [];
+
+	  position = function() {
+	    var tether, _i, _len;
+	    for (_i = 0, _len = tethers.length; _i < _len; _i++) {
+	      tether = tethers[_i];
+	      tether.position(false);
+	    }
+	    return flush();
+	  };
+
+	  now = function() {
+	    var _ref1;
+	    return (_ref1 = typeof performance !== "undefined" && performance !== null ? typeof performance.now === "function" ? performance.now() : void 0 : void 0) != null ? _ref1 : +(new Date);
+	  };
+
+	  (function() {
+	    var event, lastCall, lastDuration, pendingTimeout, tick, _i, _len, _ref1, _results;
+	    lastCall = null;
+	    lastDuration = null;
+	    pendingTimeout = null;
+	    tick = function() {
+	      if ((lastDuration != null) && lastDuration > 16) {
+	        lastDuration = Math.min(lastDuration - 16, 250);
+	        pendingTimeout = setTimeout(tick, 250);
+	        return;
+	      }
+	      if ((lastCall != null) && (now() - lastCall) < 10) {
+	        return;
+	      }
+	      if (pendingTimeout != null) {
+	        clearTimeout(pendingTimeout);
+	        pendingTimeout = null;
+	      }
+	      lastCall = now();
+	      position();
+	      return lastDuration = now() - lastCall;
+	    };
+	    _ref1 = ['resize', 'scroll', 'touchmove'];
+	    _results = [];
+	    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+	      event = _ref1[_i];
+	      _results.push(window.addEventListener(event, tick));
+	    }
+	    return _results;
+	  })();
+
+	  MIRROR_LR = {
+	    center: 'center',
+	    left: 'right',
+	    right: 'left'
+	  };
+
+	  MIRROR_TB = {
+	    middle: 'middle',
+	    top: 'bottom',
+	    bottom: 'top'
+	  };
+
+	  OFFSET_MAP = {
+	    top: 0,
+	    left: 0,
+	    middle: '50%',
+	    center: '50%',
+	    bottom: '100%',
+	    right: '100%'
+	  };
+
+	  autoToFixedAttachment = function(attachment, relativeToAttachment) {
+	    var left, top;
+	    left = attachment.left, top = attachment.top;
+	    if (left === 'auto') {
+	      left = MIRROR_LR[relativeToAttachment.left];
+	    }
+	    if (top === 'auto') {
+	      top = MIRROR_TB[relativeToAttachment.top];
+	    }
+	    return {
+	      left: left,
+	      top: top
+	    };
+	  };
+
+	  attachmentToOffset = function(attachment) {
+	    var _ref1, _ref2;
+	    return {
+	      left: (_ref1 = OFFSET_MAP[attachment.left]) != null ? _ref1 : attachment.left,
+	      top: (_ref2 = OFFSET_MAP[attachment.top]) != null ? _ref2 : attachment.top
+	    };
+	  };
+
+	  addOffset = function() {
+	    var left, offsets, out, top, _i, _len, _ref1;
+	    offsets = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+	    out = {
+	      top: 0,
+	      left: 0
+	    };
+	    for (_i = 0, _len = offsets.length; _i < _len; _i++) {
+	      _ref1 = offsets[_i], top = _ref1.top, left = _ref1.left;
+	      if (typeof top === 'string') {
+	        top = parseFloat(top, 10);
+	      }
+	      if (typeof left === 'string') {
+	        left = parseFloat(left, 10);
+	      }
+	      out.top += top;
+	      out.left += left;
+	    }
+	    return out;
+	  };
+
+	  offsetToPx = function(offset, size) {
+	    if (typeof offset.left === 'string' && offset.left.indexOf('%') !== -1) {
+	      offset.left = parseFloat(offset.left, 10) / 100 * size.width;
+	    }
+	    if (typeof offset.top === 'string' && offset.top.indexOf('%') !== -1) {
+	      offset.top = parseFloat(offset.top, 10) / 100 * size.height;
+	    }
+	    return offset;
+	  };
+
+	  parseAttachment = parseOffset = function(value) {
+	    var left, top, _ref1;
+	    _ref1 = value.split(' '), top = _ref1[0], left = _ref1[1];
+	    return {
+	      top: top,
+	      left: left
+	    };
+	  };
+
+	  _Tether = (function() {
+	    _Tether.modules = [];
+
+	    function _Tether(options) {
+	      this.position = __bind(this.position, this);
+	      var module, _i, _len, _ref1, _ref2;
+	      tethers.push(this);
+	      this.history = [];
+	      this.setOptions(options, false);
+	      _ref1 = Tether.modules;
+	      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+	        module = _ref1[_i];
+	        if ((_ref2 = module.initialize) != null) {
+	          _ref2.call(this);
+	        }
+	      }
+	      this.position();
+	    }
+
+	    _Tether.prototype.getClass = function(key) {
+	      var _ref1, _ref2;
+	      if ((_ref1 = this.options.classes) != null ? _ref1[key] : void 0) {
+	        return this.options.classes[key];
+	      } else if (((_ref2 = this.options.classes) != null ? _ref2[key] : void 0) !== false) {
+	        if (this.options.classPrefix) {
+	          return "" + this.options.classPrefix + "-" + key;
+	        } else {
+	          return key;
+	        }
+	      } else {
+	        return '';
+	      }
+	    };
+
+	    _Tether.prototype.setOptions = function(options, position) {
+	      var defaults, key, _i, _len, _ref1, _ref2;
+	      this.options = options;
+	      if (position == null) {
+	        position = true;
+	      }
+	      defaults = {
+	        offset: '0 0',
+	        targetOffset: '0 0',
+	        targetAttachment: 'auto auto',
+	        classPrefix: 'tether'
+	      };
+	      this.options = extend(defaults, this.options);
+	      _ref1 = this.options, this.element = _ref1.element, this.target = _ref1.target, this.targetModifier = _ref1.targetModifier;
+	      if (this.target === 'viewport') {
+	        this.target = document.body;
+	        this.targetModifier = 'visible';
+	      } else if (this.target === 'scroll-handle') {
+	        this.target = document.body;
+	        this.targetModifier = 'scroll-handle';
+	      }
+	      _ref2 = ['element', 'target'];
+	      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+	        key = _ref2[_i];
+	        if (this[key] == null) {
+	          throw new Error("Tether Error: Both element and target must be defined");
+	        }
+	        if (this[key].jquery != null) {
+	          this[key] = this[key][0];
+	        } else if (typeof this[key] === 'string') {
+	          this[key] = document.querySelector(this[key]);
+	        }
+	      }
+	      addClass(this.element, this.getClass('element'));
+	      addClass(this.target, this.getClass('target'));
+	      if (!this.options.attachment) {
+	        throw new Error("Tether Error: You must provide an attachment");
+	      }
+	      this.targetAttachment = parseAttachment(this.options.targetAttachment);
+	      this.attachment = parseAttachment(this.options.attachment);
+	      this.offset = parseOffset(this.options.offset);
+	      this.targetOffset = parseOffset(this.options.targetOffset);
+	      if (this.scrollParent != null) {
+	        this.disable();
+	      }
+	      if (this.targetModifier === 'scroll-handle') {
+	        this.scrollParent = this.target;
+	      } else {
+	        this.scrollParent = getScrollParent(this.target);
+	      }
+	      if (this.options.enabled !== false) {
+	        return this.enable(position);
+	      }
+	    };
+
+	    _Tether.prototype.getTargetBounds = function() {
+	      var bounds, fitAdj, hasBottomScroll, height, out, scrollBottom, scrollPercentage, style, target;
+	      if (this.targetModifier != null) {
+	        switch (this.targetModifier) {
+	          case 'visible':
+	            if (this.target === document.body) {
+	              return {
+	                top: pageYOffset,
+	                left: pageXOffset,
+	                height: innerHeight,
+	                width: innerWidth
+	              };
+	            } else {
+	              bounds = getBounds(this.target);
+	              out = {
+	                height: bounds.height,
+	                width: bounds.width,
+	                top: bounds.top,
+	                left: bounds.left
+	              };
+	              out.height = Math.min(out.height, bounds.height - (pageYOffset - bounds.top));
+	              out.height = Math.min(out.height, bounds.height - ((bounds.top + bounds.height) - (pageYOffset + innerHeight)));
+	              out.height = Math.min(innerHeight, out.height);
+	              out.height -= 2;
+	              out.width = Math.min(out.width, bounds.width - (pageXOffset - bounds.left));
+	              out.width = Math.min(out.width, bounds.width - ((bounds.left + bounds.width) - (pageXOffset + innerWidth)));
+	              out.width = Math.min(innerWidth, out.width);
+	              out.width -= 2;
+	              if (out.top < pageYOffset) {
+	                out.top = pageYOffset;
+	              }
+	              if (out.left < pageXOffset) {
+	                out.left = pageXOffset;
+	              }
+	              return out;
+	            }
+	            break;
+	          case 'scroll-handle':
+	            target = this.target;
+	            if (target === document.body) {
+	              target = document.documentElement;
+	              bounds = {
+	                left: pageXOffset,
+	                top: pageYOffset,
+	                height: innerHeight,
+	                width: innerWidth
+	              };
+	            } else {
+	              bounds = getBounds(target);
+	            }
+	            style = getComputedStyle(target);
+	            hasBottomScroll = target.scrollWidth > target.clientWidth || 'scroll' === [style.overflow, style.overflowX] || this.target !== document.body;
+	            scrollBottom = 0;
+	            if (hasBottomScroll) {
+	              scrollBottom = 15;
+	            }
+	            height = bounds.height - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth) - scrollBottom;
+	            out = {
+	              width: 15,
+	              height: height * 0.975 * (height / target.scrollHeight),
+	              left: bounds.left + bounds.width - parseFloat(style.borderLeftWidth) - 15
+	            };
+	            fitAdj = 0;
+	            if (height < 408 && this.target === document.body) {
+	              fitAdj = -0.00011 * Math.pow(height, 2) - 0.00727 * height + 22.58;
+	            }
+	            if (this.target !== document.body) {
+	              out.height = Math.max(out.height, 24);
+	            }
+	            scrollPercentage = this.target.scrollTop / (target.scrollHeight - height);
+	            out.top = scrollPercentage * (height - out.height - fitAdj) + bounds.top + parseFloat(style.borderTopWidth);
+	            if (this.target === document.body) {
+	              out.height = Math.max(out.height, 24);
+	            }
+	            return out;
+	        }
+	      } else {
+	        return getBounds(this.target);
+	      }
+	    };
+
+	    _Tether.prototype.clearCache = function() {
+	      return this._cache = {};
+	    };
+
+	    _Tether.prototype.cache = function(k, getter) {
+	      if (this._cache == null) {
+	        this._cache = {};
+	      }
+	      if (this._cache[k] == null) {
+	        this._cache[k] = getter.call(this);
+	      }
+	      return this._cache[k];
+	    };
+
+	    _Tether.prototype.enable = function(position) {
+	      if (position == null) {
+	        position = true;
+	      }
+	      addClass(this.target, this.getClass('enabled'));
+	      addClass(this.element, this.getClass('enabled'));
+	      this.enabled = true;
+	      if (this.scrollParent !== document) {
+	        this.scrollParent.addEventListener('scroll', this.position);
+	      }
+	      if (position) {
+	        return this.position();
+	      }
+	    };
+
+	    _Tether.prototype.disable = function() {
+	      removeClass(this.target, this.getClass('enabled'));
+	      removeClass(this.element, this.getClass('enabled'));
+	      this.enabled = false;
+	      if (this.scrollParent != null) {
+	        return this.scrollParent.removeEventListener('scroll', this.position);
+	      }
+	    };
+
+	    _Tether.prototype.destroy = function() {
+	      var i, tether, _i, _len, _results;
+	      this.disable();
+	      _results = [];
+	      for (i = _i = 0, _len = tethers.length; _i < _len; i = ++_i) {
+	        tether = tethers[i];
+	        if (tether === this) {
+	          tethers.splice(i, 1);
+	          break;
+	        } else {
+	          _results.push(void 0);
+	        }
+	      }
+	      return _results;
+	    };
+
+	    _Tether.prototype.updateAttachClasses = function(elementAttach, targetAttach) {
+	      var add, all, side, sides, _i, _j, _len, _len1, _ref1,
+	        _this = this;
+	      if (elementAttach == null) {
+	        elementAttach = this.attachment;
+	      }
+	      if (targetAttach == null) {
+	        targetAttach = this.targetAttachment;
+	      }
+	      sides = ['left', 'top', 'bottom', 'right', 'middle', 'center'];
+	      if ((_ref1 = this._addAttachClasses) != null ? _ref1.length : void 0) {
+	        this._addAttachClasses.splice(0, this._addAttachClasses.length);
+	      }
+	      add = this._addAttachClasses != null ? this._addAttachClasses : this._addAttachClasses = [];
+	      if (elementAttach.top) {
+	        add.push("" + (this.getClass('element-attached')) + "-" + elementAttach.top);
+	      }
+	      if (elementAttach.left) {
+	        add.push("" + (this.getClass('element-attached')) + "-" + elementAttach.left);
+	      }
+	      if (targetAttach.top) {
+	        add.push("" + (this.getClass('target-attached')) + "-" + targetAttach.top);
+	      }
+	      if (targetAttach.left) {
+	        add.push("" + (this.getClass('target-attached')) + "-" + targetAttach.left);
+	      }
+	      all = [];
+	      for (_i = 0, _len = sides.length; _i < _len; _i++) {
+	        side = sides[_i];
+	        all.push("" + (this.getClass('element-attached')) + "-" + side);
+	      }
+	      for (_j = 0, _len1 = sides.length; _j < _len1; _j++) {
+	        side = sides[_j];
+	        all.push("" + (this.getClass('target-attached')) + "-" + side);
+	      }
+	      return defer(function() {
+	        if (_this._addAttachClasses == null) {
+	          return;
+	        }
+	        updateClasses(_this.element, _this._addAttachClasses, all);
+	        updateClasses(_this.target, _this._addAttachClasses, all);
+	        return _this._addAttachClasses = void 0;
+	      });
+	    };
+
+	    _Tether.prototype.position = function(flushChanges) {
+	      var elementPos, elementStyle, height, left, manualOffset, manualTargetOffset, module, next, offset, offsetBorder, offsetParent, offsetParentSize, offsetParentStyle, offsetPosition, ret, scrollLeft, scrollTop, scrollbarSize, side, targetAttachment, targetOffset, targetPos, targetSize, top, width, _i, _j, _len, _len1, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
+	        _this = this;
+	      if (flushChanges == null) {
+	        flushChanges = true;
+	      }
+	      if (!this.enabled) {
+	        return;
+	      }
+	      this.clearCache();
+	      targetAttachment = autoToFixedAttachment(this.targetAttachment, this.attachment);
+	      this.updateAttachClasses(this.attachment, targetAttachment);
+	      elementPos = this.cache('element-bounds', function() {
+	        return getBounds(_this.element);
+	      });
+	      width = elementPos.width, height = elementPos.height;
+	      if (width === 0 && height === 0 && (this.lastSize != null)) {
+	        _ref1 = this.lastSize, width = _ref1.width, height = _ref1.height;
+	      } else {
+	        this.lastSize = {
+	          width: width,
+	          height: height
+	        };
+	      }
+	      targetSize = targetPos = this.cache('target-bounds', function() {
+	        return _this.getTargetBounds();
+	      });
+	      offset = offsetToPx(attachmentToOffset(this.attachment), {
+	        width: width,
+	        height: height
+	      });
+	      targetOffset = offsetToPx(attachmentToOffset(targetAttachment), targetSize);
+	      manualOffset = offsetToPx(this.offset, {
+	        width: width,
+	        height: height
+	      });
+	      manualTargetOffset = offsetToPx(this.targetOffset, targetSize);
+	      offset = addOffset(offset, manualOffset);
+	      targetOffset = addOffset(targetOffset, manualTargetOffset);
+	      left = targetPos.left + targetOffset.left - offset.left;
+	      top = targetPos.top + targetOffset.top - offset.top;
+	      _ref2 = Tether.modules;
+	      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+	        module = _ref2[_i];
+	        ret = module.position.call(this, {
+	          left: left,
+	          top: top,
+	          targetAttachment: targetAttachment,
+	          targetPos: targetPos,
+	          attachment: this.attachment,
+	          elementPos: elementPos,
+	          offset: offset,
+	          targetOffset: targetOffset,
+	          manualOffset: manualOffset,
+	          manualTargetOffset: manualTargetOffset,
+	          scrollbarSize: scrollbarSize
+	        });
+	        if ((ret == null) || typeof ret !== 'object') {
+	          continue;
+	        } else if (ret === false) {
+	          return false;
+	        } else {
+	          top = ret.top, left = ret.left;
+	        }
+	      }
+	      next = {
+	        page: {
+	          top: top,
+	          left: left
+	        },
+	        viewport: {
+	          top: top - pageYOffset,
+	          bottom: pageYOffset - top - height + innerHeight,
+	          left: left - pageXOffset,
+	          right: pageXOffset - left - width + innerWidth
+	        }
+	      };
+	      if (document.body.scrollWidth > window.innerWidth) {
+	        scrollbarSize = this.cache('scrollbar-size', getScrollBarSize);
+	        next.viewport.bottom -= scrollbarSize.height;
+	      }
+	      if (document.body.scrollHeight > window.innerHeight) {
+	        scrollbarSize = this.cache('scrollbar-size', getScrollBarSize);
+	        next.viewport.right -= scrollbarSize.width;
+	      }
+	      if (((_ref3 = document.body.style.position) !== '' && _ref3 !== 'static') || ((_ref4 = document.body.parentElement.style.position) !== '' && _ref4 !== 'static')) {
+	        next.page.bottom = document.body.scrollHeight - top - height;
+	        next.page.right = document.body.scrollWidth - left - width;
+	      }
+	      if (((_ref5 = this.options.optimizations) != null ? _ref5.moveElement : void 0) !== false && (this.targetModifier == null)) {
+	        offsetParent = this.cache('target-offsetparent', function() {
+	          return getOffsetParent(_this.target);
+	        });
+	        offsetPosition = this.cache('target-offsetparent-bounds', function() {
+	          return getBounds(offsetParent);
+	        });
+	        offsetParentStyle = getComputedStyle(offsetParent);
+	        elementStyle = getComputedStyle(this.element);
+	        offsetParentSize = offsetPosition;
+	        offsetBorder = {};
+	        _ref6 = ['Top', 'Left', 'Bottom', 'Right'];
+	        for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+	          side = _ref6[_j];
+	          offsetBorder[side.toLowerCase()] = parseFloat(offsetParentStyle["border" + side + "Width"]);
+	        }
+	        offsetPosition.right = document.body.scrollWidth - offsetPosition.left - offsetParentSize.width + offsetBorder.right;
+	        offsetPosition.bottom = document.body.scrollHeight - offsetPosition.top - offsetParentSize.height + offsetBorder.bottom;
+	        if (next.page.top >= (offsetPosition.top + offsetBorder.top) && next.page.bottom >= offsetPosition.bottom) {
+	          if (next.page.left >= (offsetPosition.left + offsetBorder.left) && next.page.right >= offsetPosition.right) {
+	            scrollTop = offsetParent.scrollTop;
+	            scrollLeft = offsetParent.scrollLeft;
+	            next.offset = {
+	              top: next.page.top - offsetPosition.top + scrollTop - offsetBorder.top,
+	              left: next.page.left - offsetPosition.left + scrollLeft - offsetBorder.left
+	            };
+	          }
+	        }
+	      }
+	      this.move(next);
+	      this.history.unshift(next);
+	      if (this.history.length > 3) {
+	        this.history.pop();
+	      }
+	      if (flushChanges) {
+	        flush();
+	      }
+	      return true;
+	    };
+
+	    _Tether.prototype.move = function(position) {
+	      var css, elVal, found, key, moved, offsetParent, point, same, transcribe, type, val, write, writeCSS, _i, _len, _ref1, _ref2,
+	        _this = this;
+	      if (this.element.parentNode == null) {
+	        return;
+	      }
+	      same = {};
+	      for (type in position) {
+	        same[type] = {};
+	        for (key in position[type]) {
+	          found = false;
+	          _ref1 = this.history;
+	          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+	            point = _ref1[_i];
+	            if (!within((_ref2 = point[type]) != null ? _ref2[key] : void 0, position[type][key])) {
+	              found = true;
+	              break;
+	            }
+	          }
+	          if (!found) {
+	            same[type][key] = true;
+	          }
+	        }
+	      }
+	      css = {
+	        top: '',
+	        left: '',
+	        right: '',
+	        bottom: ''
+	      };
+	      transcribe = function(same, pos) {
+	        var xPos, yPos, _ref3;
+	        if (((_ref3 = _this.options.optimizations) != null ? _ref3.gpu : void 0) !== false) {
+	          if (same.top) {
+	            css.top = 0;
+	            yPos = pos.top;
+	          } else {
+	            css.bottom = 0;
+	            yPos = -pos.bottom;
+	          }
+	          if (same.left) {
+	            css.left = 0;
+	            xPos = pos.left;
+	          } else {
+	            css.right = 0;
+	            xPos = -pos.right;
+	          }
+	          css[transformKey] = "translateX(" + (Math.round(xPos)) + "px) translateY(" + (Math.round(yPos)) + "px)";
+	          if (transformKey !== 'msTransform') {
+	            return css[transformKey] += " translateZ(0)";
+	          }
+	        } else {
+	          if (same.top) {
+	            css.top = "" + pos.top + "px";
+	          } else {
+	            css.bottom = "" + pos.bottom + "px";
+	          }
+	          if (same.left) {
+	            return css.left = "" + pos.left + "px";
+	          } else {
+	            return css.right = "" + pos.right + "px";
+	          }
+	        }
+	      };
+	      moved = false;
+	      if ((same.page.top || same.page.bottom) && (same.page.left || same.page.right)) {
+	        css.position = 'absolute';
+	        transcribe(same.page, position.page);
+	      } else if ((same.viewport.top || same.viewport.bottom) && (same.viewport.left || same.viewport.right)) {
+	        css.position = 'fixed';
+	        transcribe(same.viewport, position.viewport);
+	      } else if ((same.offset != null) && same.offset.top && same.offset.left) {
+	        css.position = 'absolute';
+	        offsetParent = this.cache('target-offsetparent', function() {
+	          return getOffsetParent(_this.target);
+	        });
+	        if (getOffsetParent(this.element) !== offsetParent) {
+	          defer(function() {
+	            _this.element.parentNode.removeChild(_this.element);
+	            return offsetParent.appendChild(_this.element);
+	          });
+	        }
+	        transcribe(same.offset, position.offset);
+	        moved = true;
+	      } else {
+	        css.position = 'absolute';
+	        transcribe({
+	          top: true,
+	          left: true
+	        }, position.page);
+	      }
+	      if (!moved && this.element.parentNode.tagName !== 'BODY') {
+	        this.element.parentNode.removeChild(this.element);
+	        document.body.appendChild(this.element);
+	      }
+	      writeCSS = {};
+	      write = false;
+	      for (key in css) {
+	        val = css[key];
+	        elVal = this.element.style[key];
+	        if (elVal !== '' && val !== '' && (key === 'top' || key === 'left' || key === 'bottom' || key === 'right')) {
+	          elVal = parseFloat(elVal);
+	          val = parseFloat(val);
+	        }
+	        if (elVal !== val) {
+	          write = true;
+	          writeCSS[key] = css[key];
+	        }
+	      }
+	      if (write) {
+	        return defer(function() {
+	          return extend(_this.element.style, writeCSS);
+	        });
+	      }
+	    };
+
+	    return _Tether;
+
+	  })();
+
+	  Tether.position = position;
+
+	  this.Tether = extend(_Tether, Tether);
+
+	}).call(this);
+
+	(function() {
+	  var BOUNDS_FORMAT, MIRROR_ATTACH, defer, extend, getBoundingRect, getBounds, getOuterSize, getSize, updateClasses, _ref,
+	    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+	  _ref = this.Tether.Utils, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getSize = _ref.getSize, extend = _ref.extend, updateClasses = _ref.updateClasses, defer = _ref.defer;
+
+	  MIRROR_ATTACH = {
+	    left: 'right',
+	    right: 'left',
+	    top: 'bottom',
+	    bottom: 'top',
+	    middle: 'middle'
+	  };
+
+	  BOUNDS_FORMAT = ['left', 'top', 'right', 'bottom'];
+
+	  getBoundingRect = function(tether, to) {
+	    var i, pos, side, size, style, _i, _len;
+	    if (to === 'scrollParent') {
+	      to = tether.scrollParent;
+	    } else if (to === 'window') {
+	      to = [pageXOffset, pageYOffset, innerWidth + pageXOffset, innerHeight + pageYOffset];
+	    }
+	    if (to === document) {
+	      to = to.documentElement;
+	    }
+	    if (to.nodeType != null) {
+	      pos = size = getBounds(to);
+	      style = getComputedStyle(to);
+	      to = [pos.left, pos.top, size.width + pos.left, size.height + pos.top];
+	      for (i = _i = 0, _len = BOUNDS_FORMAT.length; _i < _len; i = ++_i) {
+	        side = BOUNDS_FORMAT[i];
+	        side = side[0].toUpperCase() + side.substr(1);
+	        if (side === 'Top' || side === 'Left') {
+	          to[i] += parseFloat(style["border" + side + "Width"]);
+	        } else {
+	          to[i] -= parseFloat(style["border" + side + "Width"]);
+	        }
+	      }
+	    }
+	    return to;
+	  };
+
+	  this.Tether.modules.push({
+	    position: function(_arg) {
+	      var addClasses, allClasses, attachment, bounds, changeAttachX, changeAttachY, cls, constraint, eAttachment, height, left, oob, oobClass, p, pin, pinned, pinnedClass, removeClass, side, tAttachment, targetAttachment, targetHeight, targetSize, targetWidth, to, top, width, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
+	        _this = this;
+	      top = _arg.top, left = _arg.left, targetAttachment = _arg.targetAttachment;
+	      if (!this.options.constraints) {
+	        return true;
+	      }
+	      removeClass = function(prefix) {
+	        var side, _i, _len, _results;
+	        _this.removeClass(prefix);
+	        _results = [];
+	        for (_i = 0, _len = BOUNDS_FORMAT.length; _i < _len; _i++) {
+	          side = BOUNDS_FORMAT[_i];
+	          _results.push(_this.removeClass("" + prefix + "-" + side));
+	        }
+	        return _results;
+	      };
+	      _ref1 = this.cache('element-bounds', function() {
+	        return getBounds(_this.element);
+	      }), height = _ref1.height, width = _ref1.width;
+	      if (width === 0 && height === 0 && (this.lastSize != null)) {
+	        _ref2 = this.lastSize, width = _ref2.width, height = _ref2.height;
+	      }
+	      targetSize = this.cache('target-bounds', function() {
+	        return _this.getTargetBounds();
+	      });
+	      targetHeight = targetSize.height;
+	      targetWidth = targetSize.width;
+	      tAttachment = {};
+	      eAttachment = {};
+	      allClasses = [this.getClass('pinned'), this.getClass('out-of-bounds')];
+	      _ref3 = this.options.constraints;
+	      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+	        constraint = _ref3[_i];
+	        if (constraint.outOfBoundsClass) {
+	          allClasses.push(constraint.outOfBoundsClass);
+	        }
+	        if (constraint.pinnedClass) {
+	          allClasses.push(constraint.pinnedClass);
+	        }
+	      }
+	      for (_j = 0, _len1 = allClasses.length; _j < _len1; _j++) {
+	        cls = allClasses[_j];
+	        _ref4 = ['left', 'top', 'right', 'bottom'];
+	        for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
+	          side = _ref4[_k];
+	          allClasses.push("" + cls + "-" + side);
+	        }
+	      }
+	      addClasses = [];
+	      tAttachment = extend({}, targetAttachment);
+	      eAttachment = extend({}, this.attachment);
+	      _ref5 = this.options.constraints;
+	      for (_l = 0, _len3 = _ref5.length; _l < _len3; _l++) {
+	        constraint = _ref5[_l];
+	        to = constraint.to, attachment = constraint.attachment, pin = constraint.pin;
+	        if (attachment == null) {
+	          attachment = '';
+	        }
+	        if (__indexOf.call(attachment, ' ') >= 0) {
+	          _ref6 = attachment.split(' '), changeAttachY = _ref6[0], changeAttachX = _ref6[1];
+	        } else {
+	          changeAttachX = changeAttachY = attachment;
+	        }
+	        bounds = getBoundingRect(this, to);
+	        if (changeAttachY === 'target' || changeAttachY === 'both') {
+	          if (top < bounds[1] && tAttachment.top === 'top') {
+	            top += targetHeight;
+	            tAttachment.top = 'bottom';
+	          }
+	          if (top + height > bounds[3] && tAttachment.top === 'bottom') {
+	            top -= targetHeight;
+	            tAttachment.top = 'top';
+	          }
+	        }
+	        if (changeAttachY === 'together') {
+	          if (top < bounds[1] && tAttachment.top === 'top') {
+	            if (eAttachment.top === 'bottom') {
+	              top += targetHeight;
+	              tAttachment.top = 'bottom';
+	              top += height;
+	              eAttachment.top = 'top';
+	            } else if (eAttachment.top === 'top') {
+	              top += targetHeight;
+	              tAttachment.top = 'bottom';
+	              top -= height;
+	              eAttachment.top = 'bottom';
+	            }
+	          }
+	          if (top + height > bounds[3] && tAttachment.top === 'bottom') {
+	            if (eAttachment.top === 'top') {
+	              top -= targetHeight;
+	              tAttachment.top = 'top';
+	              top -= height;
+	              eAttachment.top = 'bottom';
+	            } else if (eAttachment.top === 'bottom') {
+	              top -= targetHeight;
+	              tAttachment.top = 'top';
+	              top += height;
+	              eAttachment.top = 'top';
+	            }
+	          }
+	          if (tAttachment.top === 'middle') {
+	            if (top + height > bounds[3] && eAttachment.top === 'top') {
+	              top -= height;
+	              eAttachment.top = 'bottom';
+	            } else if (top < bounds[1] && eAttachment.top === 'bottom') {
+	              top += height;
+	              eAttachment.top = 'top';
+	            }
+	          }
+	        }
+	        if (changeAttachX === 'target' || changeAttachX === 'both') {
+	          if (left < bounds[0] && tAttachment.left === 'left') {
+	            left += targetWidth;
+	            tAttachment.left = 'right';
+	          }
+	          if (left + width > bounds[2] && tAttachment.left === 'right') {
+	            left -= targetWidth;
+	            tAttachment.left = 'left';
+	          }
+	        }
+	        if (changeAttachX === 'together') {
+	          if (left < bounds[0] && tAttachment.left === 'left') {
+	            if (eAttachment.left === 'right') {
+	              left += targetWidth;
+	              tAttachment.left = 'right';
+	              left += width;
+	              eAttachment.left = 'left';
+	            } else if (eAttachment.left === 'left') {
+	              left += targetWidth;
+	              tAttachment.left = 'right';
+	              left -= width;
+	              eAttachment.left = 'right';
+	            }
+	          } else if (left + width > bounds[2] && tAttachment.left === 'right') {
+	            if (eAttachment.left === 'left') {
+	              left -= targetWidth;
+	              tAttachment.left = 'left';
+	              left -= width;
+	              eAttachment.left = 'right';
+	            } else if (eAttachment.left === 'right') {
+	              left -= targetWidth;
+	              tAttachment.left = 'left';
+	              left += width;
+	              eAttachment.left = 'left';
+	            }
+	          } else if (tAttachment.left === 'center') {
+	            if (left + width > bounds[2] && eAttachment.left === 'left') {
+	              left -= width;
+	              eAttachment.left = 'right';
+	            } else if (left < bounds[0] && eAttachment.left === 'right') {
+	              left += width;
+	              eAttachment.left = 'left';
+	            }
+	          }
+	        }
+	        if (changeAttachY === 'element' || changeAttachY === 'both') {
+	          if (top < bounds[1] && eAttachment.top === 'bottom') {
+	            top += height;
+	            eAttachment.top = 'top';
+	          }
+	          if (top + height > bounds[3] && eAttachment.top === 'top') {
+	            top -= height;
+	            eAttachment.top = 'bottom';
+	          }
+	        }
+	        if (changeAttachX === 'element' || changeAttachX === 'both') {
+	          if (left < bounds[0] && eAttachment.left === 'right') {
+	            left += width;
+	            eAttachment.left = 'left';
+	          }
+	          if (left + width > bounds[2] && eAttachment.left === 'left') {
+	            left -= width;
+	            eAttachment.left = 'right';
+	          }
+	        }
+	        if (typeof pin === 'string') {
+	          pin = (function() {
+	            var _len4, _m, _ref7, _results;
+	            _ref7 = pin.split(',');
+	            _results = [];
+	            for (_m = 0, _len4 = _ref7.length; _m < _len4; _m++) {
+	              p = _ref7[_m];
+	              _results.push(p.trim());
+	            }
+	            return _results;
+	          })();
+	        } else if (pin === true) {
+	          pin = ['top', 'left', 'right', 'bottom'];
+	        }
+	        pin || (pin = []);
+	        pinned = [];
+	        oob = [];
+	        if (top < bounds[1]) {
+	          if (__indexOf.call(pin, 'top') >= 0) {
+	            top = bounds[1];
+	            pinned.push('top');
+	          } else {
+	            oob.push('top');
+	          }
+	        }
+	        if (top + height > bounds[3]) {
+	          if (__indexOf.call(pin, 'bottom') >= 0) {
+	            top = bounds[3] - height;
+	            pinned.push('bottom');
+	          } else {
+	            oob.push('bottom');
+	          }
+	        }
+	        if (left < bounds[0]) {
+	          if (__indexOf.call(pin, 'left') >= 0) {
+	            left = bounds[0];
+	            pinned.push('left');
+	          } else {
+	            oob.push('left');
+	          }
+	        }
+	        if (left + width > bounds[2]) {
+	          if (__indexOf.call(pin, 'right') >= 0) {
+	            left = bounds[2] - width;
+	            pinned.push('right');
+	          } else {
+	            oob.push('right');
+	          }
+	        }
+	        if (pinned.length) {
+	          pinnedClass = (_ref7 = this.options.pinnedClass) != null ? _ref7 : this.getClass('pinned');
+	          addClasses.push(pinnedClass);
+	          for (_m = 0, _len4 = pinned.length; _m < _len4; _m++) {
+	            side = pinned[_m];
+	            addClasses.push("" + pinnedClass + "-" + side);
+	          }
+	        }
+	        if (oob.length) {
+	          oobClass = (_ref8 = this.options.outOfBoundsClass) != null ? _ref8 : this.getClass('out-of-bounds');
+	          addClasses.push(oobClass);
+	          for (_n = 0, _len5 = oob.length; _n < _len5; _n++) {
+	            side = oob[_n];
+	            addClasses.push("" + oobClass + "-" + side);
+	          }
+	        }
+	        if (__indexOf.call(pinned, 'left') >= 0 || __indexOf.call(pinned, 'right') >= 0) {
+	          eAttachment.left = tAttachment.left = false;
+	        }
+	        if (__indexOf.call(pinned, 'top') >= 0 || __indexOf.call(pinned, 'bottom') >= 0) {
+	          eAttachment.top = tAttachment.top = false;
+	        }
+	        if (tAttachment.top !== targetAttachment.top || tAttachment.left !== targetAttachment.left || eAttachment.top !== this.attachment.top || eAttachment.left !== this.attachment.left) {
+	          this.updateAttachClasses(eAttachment, tAttachment);
+	        }
+	      }
+	      defer(function() {
+	        updateClasses(_this.target, addClasses, allClasses);
+	        return updateClasses(_this.element, addClasses, allClasses);
+	      });
+	      return {
+	        top: top,
+	        left: left
+	      };
+	    }
+	  });
+
+	}).call(this);
+
+	(function() {
+	  var defer, getBounds, updateClasses, _ref;
+
+	  _ref = this.Tether.Utils, getBounds = _ref.getBounds, updateClasses = _ref.updateClasses, defer = _ref.defer;
+
+	  this.Tether.modules.push({
+	    position: function(_arg) {
+	      var abutted, addClasses, allClasses, bottom, height, left, right, side, sides, targetPos, top, width, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref1, _ref2, _ref3, _ref4, _ref5,
+	        _this = this;
+	      top = _arg.top, left = _arg.left;
+	      _ref1 = this.cache('element-bounds', function() {
+	        return getBounds(_this.element);
+	      }), height = _ref1.height, width = _ref1.width;
+	      targetPos = this.getTargetBounds();
+	      bottom = top + height;
+	      right = left + width;
+	      abutted = [];
+	      if (top <= targetPos.bottom && bottom >= targetPos.top) {
+	        _ref2 = ['left', 'right'];
+	        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+	          side = _ref2[_i];
+	          if ((_ref3 = targetPos[side]) === left || _ref3 === right) {
+	            abutted.push(side);
+	          }
+	        }
+	      }
+	      if (left <= targetPos.right && right >= targetPos.left) {
+	        _ref4 = ['top', 'bottom'];
+	        for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
+	          side = _ref4[_j];
+	          if ((_ref5 = targetPos[side]) === top || _ref5 === bottom) {
+	            abutted.push(side);
+	          }
+	        }
+	      }
+	      allClasses = [];
+	      addClasses = [];
+	      sides = ['left', 'top', 'right', 'bottom'];
+	      allClasses.push(this.getClass('abutted'));
+	      for (_k = 0, _len2 = sides.length; _k < _len2; _k++) {
+	        side = sides[_k];
+	        allClasses.push("" + (this.getClass('abutted')) + "-" + side);
+	      }
+	      if (abutted.length) {
+	        addClasses.push(this.getClass('abutted'));
+	      }
+	      for (_l = 0, _len3 = abutted.length; _l < _len3; _l++) {
+	        side = abutted[_l];
+	        addClasses.push("" + (this.getClass('abutted')) + "-" + side);
+	      }
+	      defer(function() {
+	        updateClasses(_this.target, addClasses, allClasses);
+	        return updateClasses(_this.element, addClasses, allClasses);
+	      });
+	      return true;
+	    }
+	  });
+
+	}).call(this);
+
+	(function() {
+	  this.Tether.modules.push({
+	    position: function(_arg) {
+	      var left, result, shift, shiftLeft, shiftTop, top, _ref;
+	      top = _arg.top, left = _arg.left;
+	      if (!this.options.shift) {
+	        return;
+	      }
+	      result = function(val) {
+	        if (typeof val === 'function') {
+	          return val.call(this, {
+	            top: top,
+	            left: left
+	          });
+	        } else {
+	          return val;
+	        }
+	      };
+	      shift = result(this.options.shift);
+	      if (typeof shift === 'string') {
+	        shift = shift.split(' ');
+	        shift[1] || (shift[1] = shift[0]);
+	        shiftTop = shift[0], shiftLeft = shift[1];
+	        shiftTop = parseFloat(shiftTop, 10);
+	        shiftLeft = parseFloat(shiftLeft, 10);
+	      } else {
+	        _ref = [shift.top, shift.left], shiftTop = _ref[0], shiftLeft = _ref[1];
+	      }
+	      top += shiftTop;
+	      left += shiftLeft;
+	      return {
+	        top: top,
+	        left: left
+	      };
+	    }
+	  });
+
+	}).call(this);
+
+	return this.Tether;
+
+	}));
+
+
+/***/ },
+/* 160 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	function DateUtil(date) {
+	  this._date = date;
+	}
+
+	DateUtil.prototype.isBefore = function (other) {
+	  return this._date.isBefore(other._date, "day");
+	};
+
+	DateUtil.prototype.isAfter = function (other) {
+	  return this._date.isAfter(other._date, "day");
+	};
+
+	DateUtil.prototype.sameDay = function (other) {
+	  return this._date.isSame(other._date, "day");
+	};
+
+	DateUtil.prototype.sameMonth = function (other) {
+	  return this._date.isSame(other._date, "month");
+	};
+
+	DateUtil.prototype.day = function () {
+	  return this._date.date();
+	};
+
+	DateUtil.prototype.mapDaysInWeek = function (callback) {
+	  var week = [];
+	  var firstDay = this._date.clone();
+
+	  for (var i = 0; i < 7; i++) {
+	    var day = new DateUtil(firstDay.clone().add(i, "days"));
+
+	    week[i] = callback(day, i);
+	  }
+
+	  return week;
+	};
+
+	DateUtil.prototype.mapWeeksInMonth = function (callback) {
+	  var month = [];
+	  var firstDay = this._date.clone().startOf("month").startOf("week");
+
+	  for (var i = 0; i < 6; i++) {
+	    var weekStart = new DateUtil(firstDay.clone().add(i, "weeks"));
+
+	    month[i] = callback(weekStart, i);
+	  }
+
+	  return month;
+	};
+
+	DateUtil.prototype.weekInMonth = function (other) {
+	  var firstDayInWeek = this._date.clone();
+	  var lastDayInWeek = this._date.clone().weekday(7);
+
+	  return firstDayInWeek.isSame(other._date, "month") || lastDayInWeek.isSame(other._date, "month");
+	};
+
+	DateUtil.prototype.format = function () {
+	  return this._date.format.apply(this._date, arguments);
+	};
+
+	DateUtil.prototype.localeFormat = function () {
+	  var args = Array.prototype.slice.call(arguments);
+	  var locale = args.shift();
+	  return this._date.locale(locale).format.apply(this._date, args);
+	};
+
+	DateUtil.prototype.addMonth = function () {
+	  return new DateUtil(this._date.clone().add(1, "month"));
+	};
+
+	DateUtil.prototype.subtractMonth = function () {
+	  return new DateUtil(this._date.clone().subtract(1, "month"));
+	};
+
+	DateUtil.prototype.clone = function () {
+	  return new DateUtil(this._date.clone());
+	};
+
+	DateUtil.prototype.safeClone = function (alternative) {
+	  if (!!this._date) return this.clone();
+
+	  if (alternative === undefined) alternative = null;
+	  return new DateUtil(alternative);
+	};
+
+	DateUtil.prototype.moment = function () {
+	  return this._date;
+	};
+
+	module.exports = DateUtil;
+
+/***/ },
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var Day = __webpack_require__(162);
+	var DateUtil = __webpack_require__(160);
+	var cloneFunction = __webpack_require__(163);
 
 	var Calendar = React.createClass({
 	  displayName: "Calendar",
 
-	  mixins: [__webpack_require__(247)],
+	  mixins: [__webpack_require__(164)],
+
+	  propTypes: {
+	    weekStart: React.PropTypes.string,
+	    locale: React.PropTypes.string.isRequired,
+	    moment: React.PropTypes.func.isRequired
+	  },
 
 	  handleClickOutside: function handleClickOutside() {
 	    this.props.hideCalendar();
@@ -20503,17 +22160,21 @@ var ExampleApp =
 	    };
 	  },
 
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      weekStart: 1
-	    };
-	  },
-
-	  componentWillMount: function componentWillMount() {
+	  componentDidMount: function componentDidMount() {
 	    this.initializeMomentLocale();
 	  },
 
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+
+	    if (!this.state.moment) {
+	      var newMoment = cloneFunction(nextProps.moment);
+	      newMoment.locale(nextProps.locale);
+	      this.setState({
+	        moment: newMoment,
+	        date: new DateUtil(this.props.selected).safeClone(newMoment())
+	      });
+	    }
+
 	    if (nextProps.selected === null) {
 	      return;
 	    }
@@ -20527,15 +22188,17 @@ var ExampleApp =
 	  },
 
 	  initializeMomentLocale: function initializeMomentLocale() {
+
 	    var weekdays = this.props.weekdays.slice(0);
 	    weekdays = weekdays.concat(weekdays.splice(0, this.props.weekStart));
-
-	    this.props.moment.locale(this.props.locale, {
-	      week: {
-	        dow: this.props.weekStart
-	      },
-	      weekdaysMin: weekdays
-	    });
+	    if (this.state.moment) {
+	      this.state.moment.locale(this.props.locale, {
+	        week: {
+	          dow: this.props.weekStart
+	        },
+	        weekdaysMin: weekdays
+	      });
+	    }
 	  },
 
 	  increaseMonth: function increaseMonth() {
@@ -20578,6 +22241,8 @@ var ExampleApp =
 	    return React.createElement(Day, {
 	      key: key,
 	      day: day,
+	      moment: this.props.moment,
+	      locale: this.props.locale,
 	      date: this.state.date,
 	      onClick: this.handleDayClick.bind(this, day),
 	      selected: new DateUtil(this.props.selected),
@@ -20633,13 +22298,12 @@ var ExampleApp =
 	module.exports = Calendar;
 
 /***/ },
-/* 159 */
+/* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(1);
-	var moment = __webpack_require__(160);
 
 	var Day = React.createClass({
 	  displayName: "Day",
@@ -20679,7 +22343,362 @@ var ExampleApp =
 	module.exports = Day;
 
 /***/ },
-/* 160 */
+/* 163 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var clone = (function() {
+	'use strict';
+
+	/**
+	 * Clones (copies) an Object using deep copying.
+	 *
+	 * This function supports circular references by default, but if you are certain
+	 * there are no circular references in your object, you can save some CPU time
+	 * by calling clone(obj, false).
+	 *
+	 * Caution: if `circular` is false and `parent` contains circular references,
+	 * your program may enter an infinite loop and crash.
+	 *
+	 * @param `parent` - the object to be cloned
+	 * @param `circular` - set to true if the object to be cloned may contain
+	 *    circular references. (optional - true by default)
+	 * @param `depth` - set to a number if the object is only to be cloned to
+	 *    a particular depth. (optional - defaults to Infinity)
+	 * @param `prototype` - sets the prototype to be used when cloning an object.
+	 *    (optional - defaults to parent prototype).
+	*/
+	function clone(parent, circular, depth, prototype) {
+	  var filter;
+	  if (typeof circular === 'object') {
+	    depth = circular.depth;
+	    prototype = circular.prototype;
+	    filter = circular.filter;
+	    circular = circular.circular
+	  }
+	  // maintain two arrays for circular references, where corresponding parents
+	  // and children have the same index
+	  var allParents = [];
+	  var allChildren = [];
+
+	  var useBuffer = typeof Buffer != 'undefined';
+
+	  if (typeof circular == 'undefined')
+	    circular = true;
+
+	  if (typeof depth == 'undefined')
+	    depth = Infinity;
+
+	  // recurse this function so we don't reset allParents and allChildren
+	  function _clone(parent, depth) {
+	    // cloning null always returns null
+	    if (parent === null)
+	      return null;
+
+	    if (depth == 0)
+	      return parent;
+
+	    var child;
+	    var proto;
+	    if (typeof parent != 'object') {
+	      return parent;
+	    }
+
+	    if (clone.__isArray(parent)) {
+	      child = [];
+	    } else if (clone.__isRegExp(parent)) {
+	      child = new RegExp(parent.source, __getRegExpFlags(parent));
+	      if (parent.lastIndex) child.lastIndex = parent.lastIndex;
+	    } else if (clone.__isDate(parent)) {
+	      child = new Date(parent.getTime());
+	    } else if (useBuffer && Buffer.isBuffer(parent)) {
+	      child = new Buffer(parent.length);
+	      parent.copy(child);
+	      return child;
+	    } else {
+	      if (typeof prototype == 'undefined') {
+	        proto = Object.getPrototypeOf(parent);
+	        child = Object.create(proto);
+	      }
+	      else {
+	        child = Object.create(prototype);
+	        proto = prototype;
+	      }
+	    }
+
+	    if (circular) {
+	      var index = allParents.indexOf(parent);
+
+	      if (index != -1) {
+	        return allChildren[index];
+	      }
+	      allParents.push(parent);
+	      allChildren.push(child);
+	    }
+
+	    for (var i in parent) {
+	      var attrs;
+	      if (proto) {
+	        attrs = Object.getOwnPropertyDescriptor(proto, i);
+	      }
+
+	      if (attrs && attrs.set == null) {
+	        continue;
+	      }
+	      child[i] = _clone(parent[i], depth - 1);
+	    }
+
+	    return child;
+	  }
+
+	  return _clone(parent, depth);
+	}
+
+	/**
+	 * Simple flat clone using prototype, accepts only objects, usefull for property
+	 * override on FLAT configuration object (no nested props).
+	 *
+	 * USE WITH CAUTION! This may not behave as you wish if you do not know how this
+	 * works.
+	 */
+	clone.clonePrototype = function clonePrototype(parent) {
+	  if (parent === null)
+	    return null;
+
+	  var c = function () {};
+	  c.prototype = parent;
+	  return new c();
+	};
+
+	// private utility functions
+
+	function __objToStr(o) {
+	  return Object.prototype.toString.call(o);
+	};
+	clone.__objToStr = __objToStr;
+
+	function __isDate(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object Date]';
+	};
+	clone.__isDate = __isDate;
+
+	function __isArray(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object Array]';
+	};
+	clone.__isArray = __isArray;
+
+	function __isRegExp(o) {
+	  return typeof o === 'object' && __objToStr(o) === '[object RegExp]';
+	};
+	clone.__isRegExp = __isRegExp;
+
+	function __getRegExpFlags(re) {
+	  var flags = '';
+	  if (re.global) flags += 'g';
+	  if (re.ignoreCase) flags += 'i';
+	  if (re.multiline) flags += 'm';
+	  return flags;
+	};
+	clone.__getRegExpFlags = __getRegExpFlags;
+
+	return clone;
+	})();
+
+	if (typeof module === 'object' && module.exports) {
+	  module.exports = clone;
+	}
+
+
+/***/ },
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+	 * A mixin for handling (effectively) onClickOutside for React components.
+	 * Note that we're not intercepting any events in this approach, and we're
+	 * not using double events for capturing and discarding in layers or wrappers.
+	 *
+	 * The idea is that components define function
+	 *
+	 *   onClickOutside: function() { ... }
+	 *
+	 * If no such function is defined, an error will be thrown, as this means
+	 * either it still needs to be written, or the component should not be using
+	 * this mixing since it will not exhibit onClickOutside behaviour.
+	 *
+	 */
+	(function (root, factory) {
+	  if (true) {
+	    // AMD. Register as an anonymous module.
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports === 'object') {
+	    // Node. Note that this does not work with strict
+	    // CommonJS, but only CommonJS-like environments
+	    // that support module.exports
+	    module.exports = factory();
+	  } else {
+	    // Browser globals (root is window)
+	    root.OnClickOutside = factory();
+	  }
+	}(this, function () {
+	  "use strict";
+
+	  // Use a parallel array because we can't use
+	  // objects as keys, they get toString-coerced
+	  var registeredComponents = [];
+	  var handlers = [];
+
+	  return {
+	    componentDidMount: function() {
+	      if(!this.handleClickOutside)
+	        throw new Error("Component lacks a handleClickOutside(event) function for processing outside click events.");
+
+	      var fn = (function(localNode, eventHandler) {
+	        return function(evt) {
+	          var source = evt.target;
+	          var found = false;
+	          // If source=local then this event came from "somewhere"
+	          // inside and should be ignored. We could handle this with
+	          // a layered approach, too, but that requires going back to
+	          // thinking in terms of Dom node nesting, running counter
+	          // to React's "you shouldn't care about the DOM" philosophy.
+	          while(source.parentNode) {
+	            found = (source === localNode);
+	            if(found) return;
+	            source = source.parentNode;
+	          }
+	          eventHandler(evt);
+	        }
+	      }(this.getDOMNode(), this.handleClickOutside));
+
+	      document.addEventListener("mousedown", fn);
+	      document.addEventListener("touchstart", fn);
+
+	      var pos = registeredComponents.length;
+	      registeredComponents.push(this);
+	      handlers[pos] = fn;
+	    },
+
+	    componentWillUnmount: function() {
+	      var pos = registeredComponents.indexOf(this);
+	      if( pos>-1) {
+	        var fn = handlers[pos];
+
+	        if (fn) {
+	          // clean up so we don't leak memory
+	          handlers.splice(pos, 1);
+	          registeredComponents.splice(pos, 1);
+	          document.removeEventListener("mousedown", fn);
+	          document.removeEventListener("touchstart", fn);
+	        }
+	      }
+	    }
+	  };
+
+	}));
+
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var DateUtil = __webpack_require__(160);
+	var cloneFunction = __webpack_require__(163);
+
+	var DateInput = React.createClass({
+	  displayName: "DateInput",
+
+	  propTypes: {
+	    locale: React.PropTypes.string,
+	    moment: React.PropTypes.func.isRequired
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      dateFormat: "YYYY-MM-DD"
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      value: this.safeDateFormat(this.props.date)
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    this.toggleFocus(this.props.focus);
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.toggleFocus(nextProps.focus);
+	    var moment = cloneFunction(this.props.moment);
+	    moment.locale(nextProps.locale);
+	    this.setState({
+	      moment: moment,
+	      value: this.safeDateFormat(nextProps.date)
+	    });
+	  },
+
+	  toggleFocus: function toggleFocus(focus) {
+	    if (focus) {
+	      React.findDOMNode(this.refs.input).focus();
+	    } else {
+	      React.findDOMNode(this.refs.input).blur();
+	    }
+	  },
+
+	  handleChange: function handleChange(event) {
+	    var date = this.state.moment(event.target.value, this.props.dateFormat, true);
+
+	    this.setState({
+	      value: event.target.value
+	    });
+
+	    if (date.isValid()) {
+	      this.props.setSelected(new DateUtil(date));
+	    } else if (event.target.value === "") {
+	      this.props.clearSelected();
+	    }
+	  },
+
+	  safeDateFormat: function safeDateFormat(date) {
+	    return !!date ? date.format(this.props.dateFormat) : null;
+	  },
+
+	  handleKeyDown: function handleKeyDown(event) {
+	    switch (event.key) {
+	      case "Enter":
+	        event.preventDefault();
+	        this.props.handleEnter();
+	        break;
+	    }
+	  },
+
+	  handleClick: function handleClick(event) {
+	    this.props.handleClick(event);
+	  },
+
+	  render: function render() {
+	    return React.createElement("input", {
+	      ref: "input",
+	      type: "text",
+	      name: this.props.name,
+	      value: this.state.value,
+	      onClick: this.handleClick,
+	      onKeyDown: this.handleKeyDown,
+	      onFocus: this.props.onFocus,
+	      onChange: this.handleChange,
+	      className: "datepicker__input",
+	      placeholder: this.props.placeholderText });
+	  }
+	});
+
+	module.exports = DateInput;
+
+/***/ },
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
@@ -20945,7 +22964,7 @@ var ExampleApp =
 	                module && module.exports) {
 	            try {
 	                oldLocale = globalLocale._abbr;
-	                __webpack_require__(162)("./" + name);
+	                __webpack_require__(168)("./" + name);
 	                // because defineLocale currently also sets the global locale, we
 	                // want to undo that for lazy loaded locales
 	                locale_locales__getSetGlobalLocale(oldLocale);
@@ -23793,10 +25812,10 @@ var ExampleApp =
 	    return _moment;
 
 	}));
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(161)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(167)(module)))
 
 /***/ },
-/* 161 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function(module) {
@@ -23812,176 +25831,176 @@ var ExampleApp =
 
 
 /***/ },
-/* 162 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./af": 163,
-		"./af.js": 163,
-		"./ar": 164,
-		"./ar-ma": 165,
-		"./ar-ma.js": 165,
-		"./ar-sa": 166,
-		"./ar-sa.js": 166,
-		"./ar-tn": 167,
-		"./ar-tn.js": 167,
-		"./ar.js": 164,
-		"./az": 168,
-		"./az.js": 168,
-		"./be": 169,
-		"./be.js": 169,
-		"./bg": 170,
-		"./bg.js": 170,
-		"./bn": 171,
-		"./bn.js": 171,
-		"./bo": 172,
-		"./bo.js": 172,
-		"./br": 173,
-		"./br.js": 173,
-		"./bs": 174,
-		"./bs.js": 174,
-		"./ca": 175,
-		"./ca.js": 175,
-		"./cs": 176,
-		"./cs.js": 176,
-		"./cv": 177,
-		"./cv.js": 177,
-		"./cy": 178,
-		"./cy.js": 178,
-		"./da": 179,
-		"./da.js": 179,
-		"./de": 180,
-		"./de-at": 181,
-		"./de-at.js": 181,
-		"./de.js": 180,
-		"./el": 182,
-		"./el.js": 182,
-		"./en-au": 183,
-		"./en-au.js": 183,
-		"./en-ca": 184,
-		"./en-ca.js": 184,
-		"./en-gb": 185,
-		"./en-gb.js": 185,
-		"./eo": 186,
-		"./eo.js": 186,
-		"./es": 187,
-		"./es.js": 187,
-		"./et": 188,
-		"./et.js": 188,
-		"./eu": 189,
-		"./eu.js": 189,
-		"./fa": 190,
-		"./fa.js": 190,
-		"./fi": 191,
-		"./fi.js": 191,
-		"./fo": 192,
-		"./fo.js": 192,
-		"./fr": 193,
-		"./fr-ca": 194,
-		"./fr-ca.js": 194,
-		"./fr.js": 193,
-		"./fy": 195,
-		"./fy.js": 195,
-		"./gl": 196,
-		"./gl.js": 196,
-		"./he": 197,
-		"./he.js": 197,
-		"./hi": 198,
-		"./hi.js": 198,
-		"./hr": 199,
-		"./hr.js": 199,
-		"./hu": 200,
-		"./hu.js": 200,
-		"./hy-am": 201,
-		"./hy-am.js": 201,
-		"./id": 202,
-		"./id.js": 202,
-		"./is": 203,
-		"./is.js": 203,
-		"./it": 204,
-		"./it.js": 204,
-		"./ja": 205,
-		"./ja.js": 205,
-		"./jv": 206,
-		"./jv.js": 206,
-		"./ka": 207,
-		"./ka.js": 207,
-		"./km": 208,
-		"./km.js": 208,
-		"./ko": 209,
-		"./ko.js": 209,
-		"./lb": 210,
-		"./lb.js": 210,
-		"./lt": 211,
-		"./lt.js": 211,
-		"./lv": 212,
-		"./lv.js": 212,
-		"./me": 213,
-		"./me.js": 213,
-		"./mk": 214,
-		"./mk.js": 214,
-		"./ml": 215,
-		"./ml.js": 215,
-		"./mr": 216,
-		"./mr.js": 216,
-		"./ms-my": 217,
-		"./ms-my.js": 217,
-		"./my": 218,
-		"./my.js": 218,
-		"./nb": 219,
-		"./nb.js": 219,
-		"./ne": 220,
-		"./ne.js": 220,
-		"./nl": 221,
-		"./nl.js": 221,
-		"./nn": 222,
-		"./nn.js": 222,
-		"./pl": 223,
-		"./pl.js": 223,
-		"./pt": 224,
-		"./pt-br": 225,
-		"./pt-br.js": 225,
-		"./pt.js": 224,
-		"./ro": 226,
-		"./ro.js": 226,
-		"./ru": 227,
-		"./ru.js": 227,
-		"./si": 228,
-		"./si.js": 228,
-		"./sk": 229,
-		"./sk.js": 229,
-		"./sl": 230,
-		"./sl.js": 230,
-		"./sq": 231,
-		"./sq.js": 231,
-		"./sr": 232,
-		"./sr-cyrl": 233,
-		"./sr-cyrl.js": 233,
-		"./sr.js": 232,
-		"./sv": 234,
-		"./sv.js": 234,
-		"./ta": 235,
-		"./ta.js": 235,
-		"./th": 236,
-		"./th.js": 236,
-		"./tl-ph": 237,
-		"./tl-ph.js": 237,
-		"./tr": 238,
-		"./tr.js": 238,
-		"./tzm": 239,
-		"./tzm-latn": 240,
-		"./tzm-latn.js": 240,
-		"./tzm.js": 239,
-		"./uk": 241,
-		"./uk.js": 241,
-		"./uz": 242,
-		"./uz.js": 242,
-		"./vi": 243,
-		"./vi.js": 243,
-		"./zh-cn": 244,
-		"./zh-cn.js": 244,
-		"./zh-tw": 245,
-		"./zh-tw.js": 245
+		"./af": 169,
+		"./af.js": 169,
+		"./ar": 170,
+		"./ar-ma": 171,
+		"./ar-ma.js": 171,
+		"./ar-sa": 172,
+		"./ar-sa.js": 172,
+		"./ar-tn": 173,
+		"./ar-tn.js": 173,
+		"./ar.js": 170,
+		"./az": 174,
+		"./az.js": 174,
+		"./be": 175,
+		"./be.js": 175,
+		"./bg": 176,
+		"./bg.js": 176,
+		"./bn": 177,
+		"./bn.js": 177,
+		"./bo": 178,
+		"./bo.js": 178,
+		"./br": 179,
+		"./br.js": 179,
+		"./bs": 180,
+		"./bs.js": 180,
+		"./ca": 181,
+		"./ca.js": 181,
+		"./cs": 182,
+		"./cs.js": 182,
+		"./cv": 183,
+		"./cv.js": 183,
+		"./cy": 184,
+		"./cy.js": 184,
+		"./da": 185,
+		"./da.js": 185,
+		"./de": 186,
+		"./de-at": 187,
+		"./de-at.js": 187,
+		"./de.js": 186,
+		"./el": 188,
+		"./el.js": 188,
+		"./en-au": 189,
+		"./en-au.js": 189,
+		"./en-ca": 190,
+		"./en-ca.js": 190,
+		"./en-gb": 191,
+		"./en-gb.js": 191,
+		"./eo": 192,
+		"./eo.js": 192,
+		"./es": 193,
+		"./es.js": 193,
+		"./et": 194,
+		"./et.js": 194,
+		"./eu": 195,
+		"./eu.js": 195,
+		"./fa": 196,
+		"./fa.js": 196,
+		"./fi": 197,
+		"./fi.js": 197,
+		"./fo": 198,
+		"./fo.js": 198,
+		"./fr": 199,
+		"./fr-ca": 200,
+		"./fr-ca.js": 200,
+		"./fr.js": 199,
+		"./fy": 201,
+		"./fy.js": 201,
+		"./gl": 202,
+		"./gl.js": 202,
+		"./he": 203,
+		"./he.js": 203,
+		"./hi": 204,
+		"./hi.js": 204,
+		"./hr": 205,
+		"./hr.js": 205,
+		"./hu": 206,
+		"./hu.js": 206,
+		"./hy-am": 207,
+		"./hy-am.js": 207,
+		"./id": 208,
+		"./id.js": 208,
+		"./is": 209,
+		"./is.js": 209,
+		"./it": 210,
+		"./it.js": 210,
+		"./ja": 211,
+		"./ja.js": 211,
+		"./jv": 212,
+		"./jv.js": 212,
+		"./ka": 213,
+		"./ka.js": 213,
+		"./km": 214,
+		"./km.js": 214,
+		"./ko": 215,
+		"./ko.js": 215,
+		"./lb": 216,
+		"./lb.js": 216,
+		"./lt": 217,
+		"./lt.js": 217,
+		"./lv": 218,
+		"./lv.js": 218,
+		"./me": 219,
+		"./me.js": 219,
+		"./mk": 220,
+		"./mk.js": 220,
+		"./ml": 221,
+		"./ml.js": 221,
+		"./mr": 222,
+		"./mr.js": 222,
+		"./ms-my": 223,
+		"./ms-my.js": 223,
+		"./my": 224,
+		"./my.js": 224,
+		"./nb": 225,
+		"./nb.js": 225,
+		"./ne": 226,
+		"./ne.js": 226,
+		"./nl": 227,
+		"./nl.js": 227,
+		"./nn": 228,
+		"./nn.js": 228,
+		"./pl": 229,
+		"./pl.js": 229,
+		"./pt": 230,
+		"./pt-br": 231,
+		"./pt-br.js": 231,
+		"./pt.js": 230,
+		"./ro": 232,
+		"./ro.js": 232,
+		"./ru": 233,
+		"./ru.js": 233,
+		"./si": 234,
+		"./si.js": 234,
+		"./sk": 235,
+		"./sk.js": 235,
+		"./sl": 236,
+		"./sl.js": 236,
+		"./sq": 237,
+		"./sq.js": 237,
+		"./sr": 238,
+		"./sr-cyrl": 239,
+		"./sr-cyrl.js": 239,
+		"./sr.js": 238,
+		"./sv": 240,
+		"./sv.js": 240,
+		"./ta": 241,
+		"./ta.js": 241,
+		"./th": 242,
+		"./th.js": 242,
+		"./tl-ph": 243,
+		"./tl-ph.js": 243,
+		"./tr": 244,
+		"./tr.js": 244,
+		"./tzm": 245,
+		"./tzm-latn": 246,
+		"./tzm-latn.js": 246,
+		"./tzm.js": 245,
+		"./uk": 247,
+		"./uk.js": 247,
+		"./uz": 248,
+		"./uz.js": 248,
+		"./vi": 249,
+		"./vi.js": 249,
+		"./zh-cn": 250,
+		"./zh-cn.js": 250,
+		"./zh-tw": 251,
+		"./zh-tw.js": 251
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -23994,11 +26013,11 @@ var ExampleApp =
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 162;
+	webpackContext.id = 168;
 
 
 /***/ },
-/* 163 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24006,7 +26025,7 @@ var ExampleApp =
 	//! author : Werner Mollentze : https://github.com/wernerm
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24075,7 +26094,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 164 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24085,7 +26104,7 @@ var ExampleApp =
 	//! Native plural forms: forabi https://github.com/forabi
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24215,7 +26234,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 165 */
+/* 171 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24224,7 +26243,7 @@ var ExampleApp =
 	//! author : Abdel Said : https://github.com/abdelsaid
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24278,7 +26297,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 166 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24286,7 +26305,7 @@ var ExampleApp =
 	//! author : Suhail Alkowaileet : https://github.com/xsoh
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24385,14 +26404,14 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 167 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
 	//! locale  : Tunisian Arabic (ar-tn)
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24446,7 +26465,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 168 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24454,7 +26473,7 @@ var ExampleApp =
 	//! author : topchiyev : https://github.com/topchiyev
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24554,7 +26573,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 169 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24564,7 +26583,7 @@ var ExampleApp =
 	//! Author : Menelion Elensúle : https://github.com/Oire
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24705,7 +26724,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 170 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24713,7 +26732,7 @@ var ExampleApp =
 	//! author : Krasen Borisov : https://github.com/kraz
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24799,7 +26818,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 171 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24807,7 +26826,7 @@ var ExampleApp =
 	//! author : Kaushik Gandhi : https://github.com/kaushikgandhi
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -24916,7 +26935,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 172 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -24924,7 +26943,7 @@ var ExampleApp =
 	//! author : Thupten N. Chakrishar : https://github.com/vajradog
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25030,7 +27049,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 173 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25038,7 +27057,7 @@ var ExampleApp =
 	//! author : Jean-Baptiste Le Duigou : https://github.com/jbleduigou
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25141,7 +27160,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 174 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25150,7 +27169,7 @@ var ExampleApp =
 	//! based on (hr) translation by Bojan Marković
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25286,7 +27305,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 175 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25294,7 +27313,7 @@ var ExampleApp =
 	//! author : Juan G. Hurtado : https://github.com/juanghurtado
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25369,7 +27388,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 176 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25377,7 +27396,7 @@ var ExampleApp =
 	//! author : petrbela : https://github.com/petrbela
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25530,7 +27549,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 177 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25538,7 +27557,7 @@ var ExampleApp =
 	//! author : Anatoly Mironov : https://github.com/mirontoli
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25597,7 +27616,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 178 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25605,7 +27624,7 @@ var ExampleApp =
 	//! author : Robert Allen
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25680,7 +27699,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 179 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25688,7 +27707,7 @@ var ExampleApp =
 	//! author : Ulrik Nielsen : https://github.com/mrbase
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25744,7 +27763,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 180 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25753,7 +27772,7 @@ var ExampleApp =
 	//! author: Menelion Elensúle: https://github.com/Oire
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25823,7 +27842,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 181 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25833,7 +27852,7 @@ var ExampleApp =
 	//! author : Martin Groller : https://github.com/MadMG
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -25903,7 +27922,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 182 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -25911,7 +27930,7 @@ var ExampleApp =
 	//! author : Aggelos Karalias : https://github.com/mehiel
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26001,14 +28020,14 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 183 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
 	//! locale : australian english (en-au)
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26071,7 +28090,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 184 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26079,7 +28098,7 @@ var ExampleApp =
 	//! author : Jonathan Abourbih : https://github.com/jonbca
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26138,7 +28157,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 185 */
+/* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26146,7 +28165,7 @@ var ExampleApp =
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26209,7 +28228,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 186 */
+/* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26219,7 +28238,7 @@ var ExampleApp =
 	//!          Se ne, bonvolu korekti kaj avizi min por ke mi povas lerni!
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26286,7 +28305,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 187 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26294,7 +28313,7 @@ var ExampleApp =
 	//! author : Julio Napurí : https://github.com/julionc
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26369,7 +28388,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 188 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26378,7 +28397,7 @@ var ExampleApp =
 	//! improvements : Illimar Tambek : https://github.com/ragulka
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26453,7 +28472,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 189 */
+/* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26461,7 +28480,7 @@ var ExampleApp =
 	//! author : Eneko Illarramendi : https://github.com/eillarra
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26521,7 +28540,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 190 */
+/* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26529,7 +28548,7 @@ var ExampleApp =
 	//! author : Ebrahim Byagowi : https://github.com/ebraminio
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26630,7 +28649,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 191 */
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26638,7 +28657,7 @@ var ExampleApp =
 	//! author : Tarmo Aidantausta : https://github.com/bleadof
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26741,7 +28760,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 192 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26749,7 +28768,7 @@ var ExampleApp =
 	//! author : Ragnar Johannesen : https://github.com/ragnar123
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26805,7 +28824,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 193 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26813,7 +28832,7 @@ var ExampleApp =
 	//! author : John Fischer : https://github.com/jfroffice
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26871,7 +28890,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 194 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26879,7 +28898,7 @@ var ExampleApp =
 	//! author : Jonathan Abourbih : https://github.com/jonbca
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -26933,7 +28952,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 195 */
+/* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -26941,7 +28960,7 @@ var ExampleApp =
 	//! author : Robin van der Vliet : https://github.com/robin0van0der0v
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27008,7 +29027,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 196 */
+/* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27016,7 +29035,7 @@ var ExampleApp =
 	//! author : Juan G. Hurtado : https://github.com/juanghurtado
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27087,7 +29106,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 197 */
+/* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27097,7 +29116,7 @@ var ExampleApp =
 	//! author : Tal Ater : https://github.com/TalAter
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27173,7 +29192,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 198 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27181,7 +29200,7 @@ var ExampleApp =
 	//! author : Mayank Singhal : https://github.com/mayanksinghal
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27300,7 +29319,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 199 */
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27308,7 +29327,7 @@ var ExampleApp =
 	//! author : Bojan Marković : https://github.com/bmarkovic
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27444,7 +29463,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 200 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27452,7 +29471,7 @@ var ExampleApp =
 	//! author : Adam Brunner : https://github.com/adambrunner
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27557,7 +29576,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 201 */
+/* 207 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27565,7 +29584,7 @@ var ExampleApp =
 	//! author : Armendarabyan : https://github.com/armendarabyan
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27672,7 +29691,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 202 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27681,7 +29700,7 @@ var ExampleApp =
 	//! reference: http://id.wikisource.org/wiki/Pedoman_Umum_Ejaan_Bahasa_Indonesia_yang_Disempurnakan
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27759,7 +29778,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 203 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27767,7 +29786,7 @@ var ExampleApp =
 	//! author : Hinrik Örn Sigurðsson : https://github.com/hinrik
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27890,7 +29909,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 204 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27899,7 +29918,7 @@ var ExampleApp =
 	//! author: Mattia Larentis: https://github.com/nostalgiaz
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -27964,7 +29983,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 205 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27972,7 +29991,7 @@ var ExampleApp =
 	//! author : LI Long : https://github.com/baryon
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28033,7 +30052,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 206 */
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28042,7 +30061,7 @@ var ExampleApp =
 	//! reference: http://jv.wikipedia.org/wiki/Basa_Jawa
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28120,7 +30139,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 207 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28128,7 +30147,7 @@ var ExampleApp =
 	//! author : Irakli Janiashvili : https://github.com/irakli-janiashvili
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28227,7 +30246,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 208 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28235,7 +30254,7 @@ var ExampleApp =
 	//! author : Kruy Vanna : https://github.com/kruyvanna
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28289,7 +30308,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 209 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28301,7 +30320,7 @@ var ExampleApp =
 	//! - Jeeeyul Lee <jeeeyul@gmail.com>
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28361,7 +30380,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 210 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28369,7 +30388,7 @@ var ExampleApp =
 	//! author : mweimerskirch : https://github.com/mweimerskirch, David Raison : https://github.com/kwisatz
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28499,7 +30518,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 211 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28507,7 +30526,7 @@ var ExampleApp =
 	//! author : Mindaugas Mozūras : https://github.com/mmozuras
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28618,7 +30637,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 212 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28627,7 +30646,7 @@ var ExampleApp =
 	//! author : Jānis Elmeris : https://github.com/JanisE
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28718,7 +30737,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 213 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28726,7 +30745,7 @@ var ExampleApp =
 	//! author : Miodrag Nikač <miodrag@restartit.me> : https://github.com/miodragnikac
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28831,7 +30850,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 214 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28839,7 +30858,7 @@ var ExampleApp =
 	//! author : Borislav Mickov : https://github.com/B0k0
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -28925,7 +30944,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 215 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -28933,7 +30952,7 @@ var ExampleApp =
 	//! author : Floyd Pink : https://github.com/floydpink
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29000,7 +31019,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 216 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29008,7 +31027,7 @@ var ExampleApp =
 	//! author : Harshad Kale : https://github.com/kalehv
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29125,7 +31144,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 217 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29133,7 +31152,7 @@ var ExampleApp =
 	//! author : Weldan Jamili : https://github.com/weldan
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29211,7 +31230,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 218 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29219,7 +31238,7 @@ var ExampleApp =
 	//! author : Squar team, mysquar.com
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29308,7 +31327,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 219 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29317,7 +31336,7 @@ var ExampleApp =
 	//!           Sigurd Gartmann : https://github.com/sigurdga
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29373,7 +31392,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 220 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29381,7 +31400,7 @@ var ExampleApp =
 	//! author : suvash : https://github.com/suvash
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29500,7 +31519,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 221 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29508,7 +31527,7 @@ var ExampleApp =
 	//! author : Joris Röling : https://github.com/jjupiter
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29575,7 +31594,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 222 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29583,7 +31602,7 @@ var ExampleApp =
 	//! author : https://github.com/mechuwind
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29639,7 +31658,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 223 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29647,7 +31666,7 @@ var ExampleApp =
 	//! author : Rafal Hirsz : https://github.com/evoL
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29748,7 +31767,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 224 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29756,7 +31775,7 @@ var ExampleApp =
 	//! author : Jefferson : https://github.com/jalex79
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29816,7 +31835,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 225 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29824,7 +31843,7 @@ var ExampleApp =
 	//! author : Caio Ribeiro Pereira : https://github.com/caio-ribeiro-pereira
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29880,7 +31899,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 226 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29889,7 +31908,7 @@ var ExampleApp =
 	//! author : Valentin Agachi : https://github.com/avaly
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -29958,7 +31977,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 227 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -29967,7 +31986,7 @@ var ExampleApp =
 	//! Author : Menelion Elensúle : https://github.com/Oire
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30126,7 +32145,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 228 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30134,7 +32153,7 @@ var ExampleApp =
 	//! author : Sampath Sitinamaluwa : https://github.com/sampathsris
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30195,7 +32214,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 229 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30204,7 +32223,7 @@ var ExampleApp =
 	//! based on work of petrbela : https://github.com/petrbela
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30357,7 +32376,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 230 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30365,7 +32384,7 @@ var ExampleApp =
 	//! author : Robert Sedovšek : https://github.com/sedovsek
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30521,7 +32540,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 231 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30531,7 +32550,7 @@ var ExampleApp =
 	//! author : Oerd Cukalla : https://github.com/oerd (fixes)
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30594,7 +32613,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 232 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30602,7 +32621,7 @@ var ExampleApp =
 	//! author : Milan Janačković<milanjanackovic@gmail.com> : https://github.com/milan-j
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30706,7 +32725,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 233 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30714,7 +32733,7 @@ var ExampleApp =
 	//! author : Milan Janačković<milanjanackovic@gmail.com> : https://github.com/milan-j
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30818,7 +32837,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 234 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30826,7 +32845,7 @@ var ExampleApp =
 	//! author : Jens Alm : https://github.com/ulmus
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30889,7 +32908,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 235 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30897,7 +32916,7 @@ var ExampleApp =
 	//! author : Arjunkumar Krishnamoorthy : https://github.com/tk120404
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -30988,7 +33007,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 236 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -30996,7 +33015,7 @@ var ExampleApp =
 	//! author : Kridsada Thanabulpong : https://github.com/sirn
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31057,7 +33076,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 237 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31065,7 +33084,7 @@ var ExampleApp =
 	//! author : Dan Hagman
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31123,7 +33142,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 238 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31132,7 +33151,7 @@ var ExampleApp =
 	//!           Burak Yiğit Kaya: https://github.com/BYK
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31217,7 +33236,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 239 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31225,7 +33244,7 @@ var ExampleApp =
 	//! author : Abdel Said : https://github.com/abdelsaid
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31279,7 +33298,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 240 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31287,7 +33306,7 @@ var ExampleApp =
 	//! author : Abdel Said : https://github.com/abdelsaid
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31341,7 +33360,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 241 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31350,7 +33369,7 @@ var ExampleApp =
 	//! Author : Menelion Elensúle : https://github.com/Oire
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31498,7 +33517,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 242 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31506,7 +33525,7 @@ var ExampleApp =
 	//! author : Sardor Muminov : https://github.com/muminoff
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31560,7 +33579,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 243 */
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31568,7 +33587,7 @@ var ExampleApp =
 	//! author : Bang Nguyen : https://github.com/bangnk
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31630,7 +33649,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 244 */
+/* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31639,7 +33658,7 @@ var ExampleApp =
 	//! author : Zeno Zeng : https://github.com/zenozeng
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31761,7 +33780,7 @@ var ExampleApp =
 	}));
 
 /***/ },
-/* 245 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -31769,7 +33788,7 @@ var ExampleApp =
 	//! author : Ben : https://github.com/ben-lin
 
 	(function (global, factory) {
-	   true ? factory(__webpack_require__(160)) :
+	   true ? factory(__webpack_require__(166)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -31864,1825 +33883,6 @@ var ExampleApp =
 	    return zh_tw;
 
 	}));
-
-/***/ },
-/* 246 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	function DateUtil(date) {
-	  this._date = date;
-	}
-
-	DateUtil.prototype.isBefore = function (other) {
-	  return this._date.isBefore(other._date, "day");
-	};
-
-	DateUtil.prototype.isAfter = function (other) {
-	  return this._date.isAfter(other._date, "day");
-	};
-
-	DateUtil.prototype.sameDay = function (other) {
-	  return this._date.isSame(other._date, "day");
-	};
-
-	DateUtil.prototype.sameMonth = function (other) {
-	  return this._date.isSame(other._date, "month");
-	};
-
-	DateUtil.prototype.day = function () {
-	  return this._date.date();
-	};
-
-	DateUtil.prototype.mapDaysInWeek = function (callback) {
-	  var week = [];
-	  var firstDay = this._date.clone();
-
-	  for (var i = 0; i < 7; i++) {
-	    var day = new DateUtil(firstDay.clone().add(i, "days"));
-
-	    week[i] = callback(day, i);
-	  }
-
-	  return week;
-	};
-
-	DateUtil.prototype.mapWeeksInMonth = function (callback) {
-	  var month = [];
-	  var firstDay = this._date.clone().startOf("month").startOf("week");
-
-	  for (var i = 0; i < 6; i++) {
-	    var weekStart = new DateUtil(firstDay.clone().add(i, "weeks"));
-
-	    month[i] = callback(weekStart, i);
-	  }
-
-	  return month;
-	};
-
-	DateUtil.prototype.weekInMonth = function (other) {
-	  var firstDayInWeek = this._date.clone();
-	  var lastDayInWeek = this._date.clone().weekday(7);
-
-	  return firstDayInWeek.isSame(other._date, "month") || lastDayInWeek.isSame(other._date, "month");
-	};
-
-	DateUtil.prototype.format = function () {
-	  return this._date.format.apply(this._date, arguments);
-	};
-
-	DateUtil.prototype.localeFormat = function () {
-	  var args = Array.prototype.slice.call(arguments);
-	  var locale = args.shift();
-	  return this._date.locale(locale).format.apply(this._date, args);
-	};
-
-	DateUtil.prototype.addMonth = function () {
-	  return new DateUtil(this._date.clone().add(1, "month"));
-	};
-
-	DateUtil.prototype.subtractMonth = function () {
-	  return new DateUtil(this._date.clone().subtract(1, "month"));
-	};
-
-	DateUtil.prototype.clone = function () {
-	  return new DateUtil(this._date.clone());
-	};
-
-	DateUtil.prototype.safeClone = function (alternative) {
-	  if (!!this._date) return this.clone();
-
-	  if (alternative === undefined) alternative = null;
-	  return new DateUtil(alternative);
-	};
-
-	DateUtil.prototype.moment = function () {
-	  return this._date;
-	};
-
-	module.exports = DateUtil;
-
-/***/ },
-/* 247 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
-	 * A mixin for handling (effectively) onClickOutside for React components.
-	 * Note that we're not intercepting any events in this approach, and we're
-	 * not using double events for capturing and discarding in layers or wrappers.
-	 *
-	 * The idea is that components define function
-	 *
-	 *   onClickOutside: function() { ... }
-	 *
-	 * If no such function is defined, an error will be thrown, as this means
-	 * either it still needs to be written, or the component should not be using
-	 * this mixing since it will not exhibit onClickOutside behaviour.
-	 *
-	 */
-	(function (root, factory) {
-	  if (true) {
-	    // AMD. Register as an anonymous module.
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof exports === 'object') {
-	    // Node. Note that this does not work with strict
-	    // CommonJS, but only CommonJS-like environments
-	    // that support module.exports
-	    module.exports = factory();
-	  } else {
-	    // Browser globals (root is window)
-	    root.OnClickOutside = factory();
-	  }
-	}(this, function () {
-	  "use strict";
-
-	  // Use a parallel array because we can't use
-	  // objects as keys, they get toString-coerced
-	  var registeredComponents = [];
-	  var handlers = [];
-
-	  return {
-	    componentDidMount: function() {
-	      if(!this.handleClickOutside)
-	        throw new Error("Component lacks a handleClickOutside(event) function for processing outside click events.");
-
-	      var fn = (function(localNode, eventHandler) {
-	        return function(evt) {
-	          var source = evt.target;
-	          var found = false;
-	          // If source=local then this event came from "somewhere"
-	          // inside and should be ignored. We could handle this with
-	          // a layered approach, too, but that requires going back to
-	          // thinking in terms of Dom node nesting, running counter
-	          // to React's "you shouldn't care about the DOM" philosophy.
-	          while(source.parentNode) {
-	            found = (source === localNode);
-	            if(found) return;
-	            source = source.parentNode;
-	          }
-	          eventHandler(evt);
-	        }
-	      }(this.getDOMNode(), this.handleClickOutside));
-
-	      document.addEventListener("mousedown", fn);
-	      document.addEventListener("touchstart", fn);
-
-	      var pos = registeredComponents.length;
-	      registeredComponents.push(this);
-	      handlers[pos] = fn;
-	    },
-
-	    componentWillUnmount: function() {
-	      var pos = registeredComponents.indexOf(this);
-	      if( pos>-1) {
-	        var fn = handlers[pos];
-
-	        if (fn) {
-	          // clean up so we don't leak memory
-	          handlers.splice(pos, 1);
-	          registeredComponents.splice(pos, 1);
-	          document.removeEventListener("mousedown", fn);
-	          document.removeEventListener("touchstart", fn);
-	        }
-	      }
-	    }
-	  };
-
-	}));
-
-
-/***/ },
-/* 248 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var Popover = React.createClass({
-	  displayName: "Popover",
-
-	  componentWillMount: function componentWillMount() {
-	    var popoverContainer = document.createElement("span");
-	    popoverContainer.className = "datepicker__container";
-
-	    this._popoverElement = popoverContainer;
-
-	    document.querySelector("body").appendChild(this._popoverElement);
-	  },
-
-	  componentDidMount: function componentDidMount() {
-	    this._renderPopover();
-	  },
-
-	  componentDidUpdate: function componentDidUpdate() {
-	    this._renderPopover();
-	  },
-
-	  _popoverComponent: function _popoverComponent() {
-	    var className = this.props.className;
-	    return React.createElement(
-	      "div",
-	      { className: className },
-	      this.props.children
-	    );
-	  },
-
-	  _tetherOptions: function _tetherOptions() {
-	    return {
-	      element: this._popoverElement,
-	      target: this.getDOMNode().parentElement,
-	      attachment: "top left",
-	      targetAttachment: "bottom left",
-	      targetOffset: "10px 0",
-	      optimizations: {
-	        moveElement: false // always moves to <body> anyway!
-	      }
-	    };
-	  },
-
-	  _renderPopover: function _renderPopover() {
-	    React.render(this._popoverComponent(), this._popoverElement);
-
-	    if (this._tether != null) {
-	      this._tether.setOptions(this._tetherOptions());
-	    } else if (window && document) {
-	      var Tether = __webpack_require__(249);
-	      this._tether = new Tether(this._tetherOptions());
-	    }
-	  },
-
-	  componentWillUnmount: function componentWillUnmount() {
-	    this._tether.destroy();
-	    React.unmountComponentAtNode(this._popoverElement);
-	    if (this._popoverElement.parentNode) {
-	      this._popoverElement.parentNode.removeChild(this._popoverElement);
-	    }
-	  },
-
-	  render: function render() {
-	    return React.createElement("span", null);
-	  }
-	});
-
-	module.exports = Popover;
-
-/***/ },
-/* 249 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether 0.6.5 */
-
-
-	(function(root, factory) {
-	  if (true) {
-	    !(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof exports === 'object') {
-	    module.exports = factory(require,exports,module);
-	  } else {
-	    root.Tether = factory();
-	  }
-	}(this, function(require,exports,module) {
-
-	(function() {
-	  var Evented, addClass, defer, deferred, extend, flush, getBounds, getClassName, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, setClassName, uniqueId, updateClasses, zeroPosCache,
-	    __hasProp = {}.hasOwnProperty,
-	    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
-	    __slice = [].slice;
-
-	  if (this.Tether == null) {
-	    this.Tether = {
-	      modules: []
-	    };
-	  }
-
-	  getScrollParent = function(el) {
-	    var parent, position, scrollParent, style, _ref;
-	    position = getComputedStyle(el).position;
-	    if (position === 'fixed') {
-	      return el;
-	    }
-	    scrollParent = void 0;
-	    parent = el;
-	    while (parent = parent.parentNode) {
-	      try {
-	        style = getComputedStyle(parent);
-	      } catch (_error) {}
-	      if (style == null) {
-	        return parent;
-	      }
-	      if (/(auto|scroll)/.test(style['overflow'] + style['overflowY'] + style['overflowX'])) {
-	        if (position !== 'absolute' || ((_ref = style['position']) === 'relative' || _ref === 'absolute' || _ref === 'fixed')) {
-	          return parent;
-	        }
-	      }
-	    }
-	    return document.body;
-	  };
-
-	  uniqueId = (function() {
-	    var id;
-	    id = 0;
-	    return function() {
-	      return id++;
-	    };
-	  })();
-
-	  zeroPosCache = {};
-
-	  getOrigin = function(doc) {
-	    var id, k, node, v, _ref;
-	    node = doc._tetherZeroElement;
-	    if (node == null) {
-	      node = doc.createElement('div');
-	      node.setAttribute('data-tether-id', uniqueId());
-	      extend(node.style, {
-	        top: 0,
-	        left: 0,
-	        position: 'absolute'
-	      });
-	      doc.body.appendChild(node);
-	      doc._tetherZeroElement = node;
-	    }
-	    id = node.getAttribute('data-tether-id');
-	    if (zeroPosCache[id] == null) {
-	      zeroPosCache[id] = {};
-	      _ref = node.getBoundingClientRect();
-	      for (k in _ref) {
-	        v = _ref[k];
-	        zeroPosCache[id][k] = v;
-	      }
-	      defer(function() {
-	        return zeroPosCache[id] = void 0;
-	      });
-	    }
-	    return zeroPosCache[id];
-	  };
-
-	  node = null;
-
-	  getBounds = function(el) {
-	    var box, doc, docEl, k, origin, v, _ref;
-	    if (el === document) {
-	      doc = document;
-	      el = document.documentElement;
-	    } else {
-	      doc = el.ownerDocument;
-	    }
-	    docEl = doc.documentElement;
-	    box = {};
-	    _ref = el.getBoundingClientRect();
-	    for (k in _ref) {
-	      v = _ref[k];
-	      box[k] = v;
-	    }
-	    origin = getOrigin(doc);
-	    box.top -= origin.top;
-	    box.left -= origin.left;
-	    if (box.width == null) {
-	      box.width = document.body.scrollWidth - box.left - box.right;
-	    }
-	    if (box.height == null) {
-	      box.height = document.body.scrollHeight - box.top - box.bottom;
-	    }
-	    box.top = box.top - docEl.clientTop;
-	    box.left = box.left - docEl.clientLeft;
-	    box.right = doc.body.clientWidth - box.width - box.left;
-	    box.bottom = doc.body.clientHeight - box.height - box.top;
-	    return box;
-	  };
-
-	  getOffsetParent = function(el) {
-	    return el.offsetParent || document.documentElement;
-	  };
-
-	  getScrollBarSize = function() {
-	    var inner, outer, width, widthContained, widthScroll;
-	    inner = document.createElement('div');
-	    inner.style.width = '100%';
-	    inner.style.height = '200px';
-	    outer = document.createElement('div');
-	    extend(outer.style, {
-	      position: 'absolute',
-	      top: 0,
-	      left: 0,
-	      pointerEvents: 'none',
-	      visibility: 'hidden',
-	      width: '200px',
-	      height: '150px',
-	      overflow: 'hidden'
-	    });
-	    outer.appendChild(inner);
-	    document.body.appendChild(outer);
-	    widthContained = inner.offsetWidth;
-	    outer.style.overflow = 'scroll';
-	    widthScroll = inner.offsetWidth;
-	    if (widthContained === widthScroll) {
-	      widthScroll = outer.clientWidth;
-	    }
-	    document.body.removeChild(outer);
-	    width = widthContained - widthScroll;
-	    return {
-	      width: width,
-	      height: width
-	    };
-	  };
-
-	  extend = function(out) {
-	    var args, key, obj, val, _i, _len, _ref;
-	    if (out == null) {
-	      out = {};
-	    }
-	    args = [];
-	    Array.prototype.push.apply(args, arguments);
-	    _ref = args.slice(1);
-	    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-	      obj = _ref[_i];
-	      if (obj) {
-	        for (key in obj) {
-	          if (!__hasProp.call(obj, key)) continue;
-	          val = obj[key];
-	          out[key] = val;
-	        }
-	      }
-	    }
-	    return out;
-	  };
-
-	  removeClass = function(el, name) {
-	    var className, cls, _i, _len, _ref, _results;
-	    if (el.classList != null) {
-	      _ref = name.split(' ');
-	      _results = [];
-	      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-	        cls = _ref[_i];
-	        if (cls.trim()) {
-	          _results.push(el.classList.remove(cls));
-	        }
-	      }
-	      return _results;
-	    } else {
-	      className = getClassName(el).replace(new RegExp("(^| )" + (name.split(' ').join('|')) + "( |$)", 'gi'), ' ');
-	      return setClassName(el, className);
-	    }
-	  };
-
-	  addClass = function(el, name) {
-	    var cls, _i, _len, _ref, _results;
-	    if (el.classList != null) {
-	      _ref = name.split(' ');
-	      _results = [];
-	      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-	        cls = _ref[_i];
-	        if (cls.trim()) {
-	          _results.push(el.classList.add(cls));
-	        }
-	      }
-	      return _results;
-	    } else {
-	      removeClass(el, name);
-	      cls = getClassName(el) + (" " + name);
-	      return setClassName(el, cls);
-	    }
-	  };
-
-	  hasClass = function(el, name) {
-	    if (el.classList != null) {
-	      return el.classList.contains(name);
-	    } else {
-	      return new RegExp("(^| )" + name + "( |$)", 'gi').test(getClassName(el));
-	    }
-	  };
-
-	  getClassName = function(el) {
-	    if (el.className instanceof SVGAnimatedString) {
-	      return el.className.baseVal;
-	    } else {
-	      return el.className;
-	    }
-	  };
-
-	  setClassName = function(el, className) {
-	    return el.setAttribute('class', className);
-	  };
-
-	  updateClasses = function(el, add, all) {
-	    var cls, _i, _j, _len, _len1, _results;
-	    for (_i = 0, _len = all.length; _i < _len; _i++) {
-	      cls = all[_i];
-	      if (__indexOf.call(add, cls) < 0) {
-	        if (hasClass(el, cls)) {
-	          removeClass(el, cls);
-	        }
-	      }
-	    }
-	    _results = [];
-	    for (_j = 0, _len1 = add.length; _j < _len1; _j++) {
-	      cls = add[_j];
-	      if (!hasClass(el, cls)) {
-	        _results.push(addClass(el, cls));
-	      } else {
-	        _results.push(void 0);
-	      }
-	    }
-	    return _results;
-	  };
-
-	  deferred = [];
-
-	  defer = function(fn) {
-	    return deferred.push(fn);
-	  };
-
-	  flush = function() {
-	    var fn, _results;
-	    _results = [];
-	    while (fn = deferred.pop()) {
-	      _results.push(fn());
-	    }
-	    return _results;
-	  };
-
-	  Evented = (function() {
-	    function Evented() {}
-
-	    Evented.prototype.on = function(event, handler, ctx, once) {
-	      var _base;
-	      if (once == null) {
-	        once = false;
-	      }
-	      if (this.bindings == null) {
-	        this.bindings = {};
-	      }
-	      if ((_base = this.bindings)[event] == null) {
-	        _base[event] = [];
-	      }
-	      return this.bindings[event].push({
-	        handler: handler,
-	        ctx: ctx,
-	        once: once
-	      });
-	    };
-
-	    Evented.prototype.once = function(event, handler, ctx) {
-	      return this.on(event, handler, ctx, true);
-	    };
-
-	    Evented.prototype.off = function(event, handler) {
-	      var i, _ref, _results;
-	      if (((_ref = this.bindings) != null ? _ref[event] : void 0) == null) {
-	        return;
-	      }
-	      if (handler == null) {
-	        return delete this.bindings[event];
-	      } else {
-	        i = 0;
-	        _results = [];
-	        while (i < this.bindings[event].length) {
-	          if (this.bindings[event][i].handler === handler) {
-	            _results.push(this.bindings[event].splice(i, 1));
-	          } else {
-	            _results.push(i++);
-	          }
-	        }
-	        return _results;
-	      }
-	    };
-
-	    Evented.prototype.trigger = function() {
-	      var args, ctx, event, handler, i, once, _ref, _ref1, _results;
-	      event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-	      if ((_ref = this.bindings) != null ? _ref[event] : void 0) {
-	        i = 0;
-	        _results = [];
-	        while (i < this.bindings[event].length) {
-	          _ref1 = this.bindings[event][i], handler = _ref1.handler, ctx = _ref1.ctx, once = _ref1.once;
-	          handler.apply(ctx != null ? ctx : this, args);
-	          if (once) {
-	            _results.push(this.bindings[event].splice(i, 1));
-	          } else {
-	            _results.push(i++);
-	          }
-	        }
-	        return _results;
-	      }
-	    };
-
-	    return Evented;
-
-	  })();
-
-	  this.Tether.Utils = {
-	    getScrollParent: getScrollParent,
-	    getBounds: getBounds,
-	    getOffsetParent: getOffsetParent,
-	    extend: extend,
-	    addClass: addClass,
-	    removeClass: removeClass,
-	    hasClass: hasClass,
-	    updateClasses: updateClasses,
-	    defer: defer,
-	    flush: flush,
-	    uniqueId: uniqueId,
-	    Evented: Evented,
-	    getScrollBarSize: getScrollBarSize
-	  };
-
-	}).call(this);
-
-	(function() {
-	  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
-	    __slice = [].slice,
-	    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-	  if (this.Tether == null) {
-	    throw new Error("You must include the utils.js file before tether.js");
-	  }
-
-	  Tether = this.Tether;
-
-	  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize;
-
-	  within = function(a, b, diff) {
-	    if (diff == null) {
-	      diff = 1;
-	    }
-	    return (a + diff >= b && b >= a - diff);
-	  };
-
-	  transformKey = (function() {
-	    var el, key, _i, _len, _ref1;
-	    el = document.createElement('div');
-	    _ref1 = ['transform', 'webkitTransform', 'OTransform', 'MozTransform', 'msTransform'];
-	    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-	      key = _ref1[_i];
-	      if (el.style[key] !== void 0) {
-	        return key;
-	      }
-	    }
-	  })();
-
-	  tethers = [];
-
-	  position = function() {
-	    var tether, _i, _len;
-	    for (_i = 0, _len = tethers.length; _i < _len; _i++) {
-	      tether = tethers[_i];
-	      tether.position(false);
-	    }
-	    return flush();
-	  };
-
-	  now = function() {
-	    var _ref1;
-	    return (_ref1 = typeof performance !== "undefined" && performance !== null ? typeof performance.now === "function" ? performance.now() : void 0 : void 0) != null ? _ref1 : +(new Date);
-	  };
-
-	  (function() {
-	    var event, lastCall, lastDuration, pendingTimeout, tick, _i, _len, _ref1, _results;
-	    lastCall = null;
-	    lastDuration = null;
-	    pendingTimeout = null;
-	    tick = function() {
-	      if ((lastDuration != null) && lastDuration > 16) {
-	        lastDuration = Math.min(lastDuration - 16, 250);
-	        pendingTimeout = setTimeout(tick, 250);
-	        return;
-	      }
-	      if ((lastCall != null) && (now() - lastCall) < 10) {
-	        return;
-	      }
-	      if (pendingTimeout != null) {
-	        clearTimeout(pendingTimeout);
-	        pendingTimeout = null;
-	      }
-	      lastCall = now();
-	      position();
-	      return lastDuration = now() - lastCall;
-	    };
-	    _ref1 = ['resize', 'scroll', 'touchmove'];
-	    _results = [];
-	    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-	      event = _ref1[_i];
-	      _results.push(window.addEventListener(event, tick));
-	    }
-	    return _results;
-	  })();
-
-	  MIRROR_LR = {
-	    center: 'center',
-	    left: 'right',
-	    right: 'left'
-	  };
-
-	  MIRROR_TB = {
-	    middle: 'middle',
-	    top: 'bottom',
-	    bottom: 'top'
-	  };
-
-	  OFFSET_MAP = {
-	    top: 0,
-	    left: 0,
-	    middle: '50%',
-	    center: '50%',
-	    bottom: '100%',
-	    right: '100%'
-	  };
-
-	  autoToFixedAttachment = function(attachment, relativeToAttachment) {
-	    var left, top;
-	    left = attachment.left, top = attachment.top;
-	    if (left === 'auto') {
-	      left = MIRROR_LR[relativeToAttachment.left];
-	    }
-	    if (top === 'auto') {
-	      top = MIRROR_TB[relativeToAttachment.top];
-	    }
-	    return {
-	      left: left,
-	      top: top
-	    };
-	  };
-
-	  attachmentToOffset = function(attachment) {
-	    var _ref1, _ref2;
-	    return {
-	      left: (_ref1 = OFFSET_MAP[attachment.left]) != null ? _ref1 : attachment.left,
-	      top: (_ref2 = OFFSET_MAP[attachment.top]) != null ? _ref2 : attachment.top
-	    };
-	  };
-
-	  addOffset = function() {
-	    var left, offsets, out, top, _i, _len, _ref1;
-	    offsets = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-	    out = {
-	      top: 0,
-	      left: 0
-	    };
-	    for (_i = 0, _len = offsets.length; _i < _len; _i++) {
-	      _ref1 = offsets[_i], top = _ref1.top, left = _ref1.left;
-	      if (typeof top === 'string') {
-	        top = parseFloat(top, 10);
-	      }
-	      if (typeof left === 'string') {
-	        left = parseFloat(left, 10);
-	      }
-	      out.top += top;
-	      out.left += left;
-	    }
-	    return out;
-	  };
-
-	  offsetToPx = function(offset, size) {
-	    if (typeof offset.left === 'string' && offset.left.indexOf('%') !== -1) {
-	      offset.left = parseFloat(offset.left, 10) / 100 * size.width;
-	    }
-	    if (typeof offset.top === 'string' && offset.top.indexOf('%') !== -1) {
-	      offset.top = parseFloat(offset.top, 10) / 100 * size.height;
-	    }
-	    return offset;
-	  };
-
-	  parseAttachment = parseOffset = function(value) {
-	    var left, top, _ref1;
-	    _ref1 = value.split(' '), top = _ref1[0], left = _ref1[1];
-	    return {
-	      top: top,
-	      left: left
-	    };
-	  };
-
-	  _Tether = (function() {
-	    _Tether.modules = [];
-
-	    function _Tether(options) {
-	      this.position = __bind(this.position, this);
-	      var module, _i, _len, _ref1, _ref2;
-	      tethers.push(this);
-	      this.history = [];
-	      this.setOptions(options, false);
-	      _ref1 = Tether.modules;
-	      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-	        module = _ref1[_i];
-	        if ((_ref2 = module.initialize) != null) {
-	          _ref2.call(this);
-	        }
-	      }
-	      this.position();
-	    }
-
-	    _Tether.prototype.getClass = function(key) {
-	      var _ref1, _ref2;
-	      if ((_ref1 = this.options.classes) != null ? _ref1[key] : void 0) {
-	        return this.options.classes[key];
-	      } else if (((_ref2 = this.options.classes) != null ? _ref2[key] : void 0) !== false) {
-	        if (this.options.classPrefix) {
-	          return "" + this.options.classPrefix + "-" + key;
-	        } else {
-	          return key;
-	        }
-	      } else {
-	        return '';
-	      }
-	    };
-
-	    _Tether.prototype.setOptions = function(options, position) {
-	      var defaults, key, _i, _len, _ref1, _ref2;
-	      this.options = options;
-	      if (position == null) {
-	        position = true;
-	      }
-	      defaults = {
-	        offset: '0 0',
-	        targetOffset: '0 0',
-	        targetAttachment: 'auto auto',
-	        classPrefix: 'tether'
-	      };
-	      this.options = extend(defaults, this.options);
-	      _ref1 = this.options, this.element = _ref1.element, this.target = _ref1.target, this.targetModifier = _ref1.targetModifier;
-	      if (this.target === 'viewport') {
-	        this.target = document.body;
-	        this.targetModifier = 'visible';
-	      } else if (this.target === 'scroll-handle') {
-	        this.target = document.body;
-	        this.targetModifier = 'scroll-handle';
-	      }
-	      _ref2 = ['element', 'target'];
-	      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-	        key = _ref2[_i];
-	        if (this[key] == null) {
-	          throw new Error("Tether Error: Both element and target must be defined");
-	        }
-	        if (this[key].jquery != null) {
-	          this[key] = this[key][0];
-	        } else if (typeof this[key] === 'string') {
-	          this[key] = document.querySelector(this[key]);
-	        }
-	      }
-	      addClass(this.element, this.getClass('element'));
-	      addClass(this.target, this.getClass('target'));
-	      if (!this.options.attachment) {
-	        throw new Error("Tether Error: You must provide an attachment");
-	      }
-	      this.targetAttachment = parseAttachment(this.options.targetAttachment);
-	      this.attachment = parseAttachment(this.options.attachment);
-	      this.offset = parseOffset(this.options.offset);
-	      this.targetOffset = parseOffset(this.options.targetOffset);
-	      if (this.scrollParent != null) {
-	        this.disable();
-	      }
-	      if (this.targetModifier === 'scroll-handle') {
-	        this.scrollParent = this.target;
-	      } else {
-	        this.scrollParent = getScrollParent(this.target);
-	      }
-	      if (this.options.enabled !== false) {
-	        return this.enable(position);
-	      }
-	    };
-
-	    _Tether.prototype.getTargetBounds = function() {
-	      var bounds, fitAdj, hasBottomScroll, height, out, scrollBottom, scrollPercentage, style, target;
-	      if (this.targetModifier != null) {
-	        switch (this.targetModifier) {
-	          case 'visible':
-	            if (this.target === document.body) {
-	              return {
-	                top: pageYOffset,
-	                left: pageXOffset,
-	                height: innerHeight,
-	                width: innerWidth
-	              };
-	            } else {
-	              bounds = getBounds(this.target);
-	              out = {
-	                height: bounds.height,
-	                width: bounds.width,
-	                top: bounds.top,
-	                left: bounds.left
-	              };
-	              out.height = Math.min(out.height, bounds.height - (pageYOffset - bounds.top));
-	              out.height = Math.min(out.height, bounds.height - ((bounds.top + bounds.height) - (pageYOffset + innerHeight)));
-	              out.height = Math.min(innerHeight, out.height);
-	              out.height -= 2;
-	              out.width = Math.min(out.width, bounds.width - (pageXOffset - bounds.left));
-	              out.width = Math.min(out.width, bounds.width - ((bounds.left + bounds.width) - (pageXOffset + innerWidth)));
-	              out.width = Math.min(innerWidth, out.width);
-	              out.width -= 2;
-	              if (out.top < pageYOffset) {
-	                out.top = pageYOffset;
-	              }
-	              if (out.left < pageXOffset) {
-	                out.left = pageXOffset;
-	              }
-	              return out;
-	            }
-	            break;
-	          case 'scroll-handle':
-	            target = this.target;
-	            if (target === document.body) {
-	              target = document.documentElement;
-	              bounds = {
-	                left: pageXOffset,
-	                top: pageYOffset,
-	                height: innerHeight,
-	                width: innerWidth
-	              };
-	            } else {
-	              bounds = getBounds(target);
-	            }
-	            style = getComputedStyle(target);
-	            hasBottomScroll = target.scrollWidth > target.clientWidth || 'scroll' === [style.overflow, style.overflowX] || this.target !== document.body;
-	            scrollBottom = 0;
-	            if (hasBottomScroll) {
-	              scrollBottom = 15;
-	            }
-	            height = bounds.height - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth) - scrollBottom;
-	            out = {
-	              width: 15,
-	              height: height * 0.975 * (height / target.scrollHeight),
-	              left: bounds.left + bounds.width - parseFloat(style.borderLeftWidth) - 15
-	            };
-	            fitAdj = 0;
-	            if (height < 408 && this.target === document.body) {
-	              fitAdj = -0.00011 * Math.pow(height, 2) - 0.00727 * height + 22.58;
-	            }
-	            if (this.target !== document.body) {
-	              out.height = Math.max(out.height, 24);
-	            }
-	            scrollPercentage = this.target.scrollTop / (target.scrollHeight - height);
-	            out.top = scrollPercentage * (height - out.height - fitAdj) + bounds.top + parseFloat(style.borderTopWidth);
-	            if (this.target === document.body) {
-	              out.height = Math.max(out.height, 24);
-	            }
-	            return out;
-	        }
-	      } else {
-	        return getBounds(this.target);
-	      }
-	    };
-
-	    _Tether.prototype.clearCache = function() {
-	      return this._cache = {};
-	    };
-
-	    _Tether.prototype.cache = function(k, getter) {
-	      if (this._cache == null) {
-	        this._cache = {};
-	      }
-	      if (this._cache[k] == null) {
-	        this._cache[k] = getter.call(this);
-	      }
-	      return this._cache[k];
-	    };
-
-	    _Tether.prototype.enable = function(position) {
-	      if (position == null) {
-	        position = true;
-	      }
-	      addClass(this.target, this.getClass('enabled'));
-	      addClass(this.element, this.getClass('enabled'));
-	      this.enabled = true;
-	      if (this.scrollParent !== document) {
-	        this.scrollParent.addEventListener('scroll', this.position);
-	      }
-	      if (position) {
-	        return this.position();
-	      }
-	    };
-
-	    _Tether.prototype.disable = function() {
-	      removeClass(this.target, this.getClass('enabled'));
-	      removeClass(this.element, this.getClass('enabled'));
-	      this.enabled = false;
-	      if (this.scrollParent != null) {
-	        return this.scrollParent.removeEventListener('scroll', this.position);
-	      }
-	    };
-
-	    _Tether.prototype.destroy = function() {
-	      var i, tether, _i, _len, _results;
-	      this.disable();
-	      _results = [];
-	      for (i = _i = 0, _len = tethers.length; _i < _len; i = ++_i) {
-	        tether = tethers[i];
-	        if (tether === this) {
-	          tethers.splice(i, 1);
-	          break;
-	        } else {
-	          _results.push(void 0);
-	        }
-	      }
-	      return _results;
-	    };
-
-	    _Tether.prototype.updateAttachClasses = function(elementAttach, targetAttach) {
-	      var add, all, side, sides, _i, _j, _len, _len1, _ref1,
-	        _this = this;
-	      if (elementAttach == null) {
-	        elementAttach = this.attachment;
-	      }
-	      if (targetAttach == null) {
-	        targetAttach = this.targetAttachment;
-	      }
-	      sides = ['left', 'top', 'bottom', 'right', 'middle', 'center'];
-	      if ((_ref1 = this._addAttachClasses) != null ? _ref1.length : void 0) {
-	        this._addAttachClasses.splice(0, this._addAttachClasses.length);
-	      }
-	      add = this._addAttachClasses != null ? this._addAttachClasses : this._addAttachClasses = [];
-	      if (elementAttach.top) {
-	        add.push("" + (this.getClass('element-attached')) + "-" + elementAttach.top);
-	      }
-	      if (elementAttach.left) {
-	        add.push("" + (this.getClass('element-attached')) + "-" + elementAttach.left);
-	      }
-	      if (targetAttach.top) {
-	        add.push("" + (this.getClass('target-attached')) + "-" + targetAttach.top);
-	      }
-	      if (targetAttach.left) {
-	        add.push("" + (this.getClass('target-attached')) + "-" + targetAttach.left);
-	      }
-	      all = [];
-	      for (_i = 0, _len = sides.length; _i < _len; _i++) {
-	        side = sides[_i];
-	        all.push("" + (this.getClass('element-attached')) + "-" + side);
-	      }
-	      for (_j = 0, _len1 = sides.length; _j < _len1; _j++) {
-	        side = sides[_j];
-	        all.push("" + (this.getClass('target-attached')) + "-" + side);
-	      }
-	      return defer(function() {
-	        if (_this._addAttachClasses == null) {
-	          return;
-	        }
-	        updateClasses(_this.element, _this._addAttachClasses, all);
-	        updateClasses(_this.target, _this._addAttachClasses, all);
-	        return _this._addAttachClasses = void 0;
-	      });
-	    };
-
-	    _Tether.prototype.position = function(flushChanges) {
-	      var elementPos, elementStyle, height, left, manualOffset, manualTargetOffset, module, next, offset, offsetBorder, offsetParent, offsetParentSize, offsetParentStyle, offsetPosition, ret, scrollLeft, scrollTop, scrollbarSize, side, targetAttachment, targetOffset, targetPos, targetSize, top, width, _i, _j, _len, _len1, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
-	        _this = this;
-	      if (flushChanges == null) {
-	        flushChanges = true;
-	      }
-	      if (!this.enabled) {
-	        return;
-	      }
-	      this.clearCache();
-	      targetAttachment = autoToFixedAttachment(this.targetAttachment, this.attachment);
-	      this.updateAttachClasses(this.attachment, targetAttachment);
-	      elementPos = this.cache('element-bounds', function() {
-	        return getBounds(_this.element);
-	      });
-	      width = elementPos.width, height = elementPos.height;
-	      if (width === 0 && height === 0 && (this.lastSize != null)) {
-	        _ref1 = this.lastSize, width = _ref1.width, height = _ref1.height;
-	      } else {
-	        this.lastSize = {
-	          width: width,
-	          height: height
-	        };
-	      }
-	      targetSize = targetPos = this.cache('target-bounds', function() {
-	        return _this.getTargetBounds();
-	      });
-	      offset = offsetToPx(attachmentToOffset(this.attachment), {
-	        width: width,
-	        height: height
-	      });
-	      targetOffset = offsetToPx(attachmentToOffset(targetAttachment), targetSize);
-	      manualOffset = offsetToPx(this.offset, {
-	        width: width,
-	        height: height
-	      });
-	      manualTargetOffset = offsetToPx(this.targetOffset, targetSize);
-	      offset = addOffset(offset, manualOffset);
-	      targetOffset = addOffset(targetOffset, manualTargetOffset);
-	      left = targetPos.left + targetOffset.left - offset.left;
-	      top = targetPos.top + targetOffset.top - offset.top;
-	      _ref2 = Tether.modules;
-	      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-	        module = _ref2[_i];
-	        ret = module.position.call(this, {
-	          left: left,
-	          top: top,
-	          targetAttachment: targetAttachment,
-	          targetPos: targetPos,
-	          attachment: this.attachment,
-	          elementPos: elementPos,
-	          offset: offset,
-	          targetOffset: targetOffset,
-	          manualOffset: manualOffset,
-	          manualTargetOffset: manualTargetOffset,
-	          scrollbarSize: scrollbarSize
-	        });
-	        if ((ret == null) || typeof ret !== 'object') {
-	          continue;
-	        } else if (ret === false) {
-	          return false;
-	        } else {
-	          top = ret.top, left = ret.left;
-	        }
-	      }
-	      next = {
-	        page: {
-	          top: top,
-	          left: left
-	        },
-	        viewport: {
-	          top: top - pageYOffset,
-	          bottom: pageYOffset - top - height + innerHeight,
-	          left: left - pageXOffset,
-	          right: pageXOffset - left - width + innerWidth
-	        }
-	      };
-	      if (document.body.scrollWidth > window.innerWidth) {
-	        scrollbarSize = this.cache('scrollbar-size', getScrollBarSize);
-	        next.viewport.bottom -= scrollbarSize.height;
-	      }
-	      if (document.body.scrollHeight > window.innerHeight) {
-	        scrollbarSize = this.cache('scrollbar-size', getScrollBarSize);
-	        next.viewport.right -= scrollbarSize.width;
-	      }
-	      if (((_ref3 = document.body.style.position) !== '' && _ref3 !== 'static') || ((_ref4 = document.body.parentElement.style.position) !== '' && _ref4 !== 'static')) {
-	        next.page.bottom = document.body.scrollHeight - top - height;
-	        next.page.right = document.body.scrollWidth - left - width;
-	      }
-	      if (((_ref5 = this.options.optimizations) != null ? _ref5.moveElement : void 0) !== false && (this.targetModifier == null)) {
-	        offsetParent = this.cache('target-offsetparent', function() {
-	          return getOffsetParent(_this.target);
-	        });
-	        offsetPosition = this.cache('target-offsetparent-bounds', function() {
-	          return getBounds(offsetParent);
-	        });
-	        offsetParentStyle = getComputedStyle(offsetParent);
-	        elementStyle = getComputedStyle(this.element);
-	        offsetParentSize = offsetPosition;
-	        offsetBorder = {};
-	        _ref6 = ['Top', 'Left', 'Bottom', 'Right'];
-	        for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
-	          side = _ref6[_j];
-	          offsetBorder[side.toLowerCase()] = parseFloat(offsetParentStyle["border" + side + "Width"]);
-	        }
-	        offsetPosition.right = document.body.scrollWidth - offsetPosition.left - offsetParentSize.width + offsetBorder.right;
-	        offsetPosition.bottom = document.body.scrollHeight - offsetPosition.top - offsetParentSize.height + offsetBorder.bottom;
-	        if (next.page.top >= (offsetPosition.top + offsetBorder.top) && next.page.bottom >= offsetPosition.bottom) {
-	          if (next.page.left >= (offsetPosition.left + offsetBorder.left) && next.page.right >= offsetPosition.right) {
-	            scrollTop = offsetParent.scrollTop;
-	            scrollLeft = offsetParent.scrollLeft;
-	            next.offset = {
-	              top: next.page.top - offsetPosition.top + scrollTop - offsetBorder.top,
-	              left: next.page.left - offsetPosition.left + scrollLeft - offsetBorder.left
-	            };
-	          }
-	        }
-	      }
-	      this.move(next);
-	      this.history.unshift(next);
-	      if (this.history.length > 3) {
-	        this.history.pop();
-	      }
-	      if (flushChanges) {
-	        flush();
-	      }
-	      return true;
-	    };
-
-	    _Tether.prototype.move = function(position) {
-	      var css, elVal, found, key, moved, offsetParent, point, same, transcribe, type, val, write, writeCSS, _i, _len, _ref1, _ref2,
-	        _this = this;
-	      if (this.element.parentNode == null) {
-	        return;
-	      }
-	      same = {};
-	      for (type in position) {
-	        same[type] = {};
-	        for (key in position[type]) {
-	          found = false;
-	          _ref1 = this.history;
-	          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-	            point = _ref1[_i];
-	            if (!within((_ref2 = point[type]) != null ? _ref2[key] : void 0, position[type][key])) {
-	              found = true;
-	              break;
-	            }
-	          }
-	          if (!found) {
-	            same[type][key] = true;
-	          }
-	        }
-	      }
-	      css = {
-	        top: '',
-	        left: '',
-	        right: '',
-	        bottom: ''
-	      };
-	      transcribe = function(same, pos) {
-	        var xPos, yPos, _ref3;
-	        if (((_ref3 = _this.options.optimizations) != null ? _ref3.gpu : void 0) !== false) {
-	          if (same.top) {
-	            css.top = 0;
-	            yPos = pos.top;
-	          } else {
-	            css.bottom = 0;
-	            yPos = -pos.bottom;
-	          }
-	          if (same.left) {
-	            css.left = 0;
-	            xPos = pos.left;
-	          } else {
-	            css.right = 0;
-	            xPos = -pos.right;
-	          }
-	          css[transformKey] = "translateX(" + (Math.round(xPos)) + "px) translateY(" + (Math.round(yPos)) + "px)";
-	          if (transformKey !== 'msTransform') {
-	            return css[transformKey] += " translateZ(0)";
-	          }
-	        } else {
-	          if (same.top) {
-	            css.top = "" + pos.top + "px";
-	          } else {
-	            css.bottom = "" + pos.bottom + "px";
-	          }
-	          if (same.left) {
-	            return css.left = "" + pos.left + "px";
-	          } else {
-	            return css.right = "" + pos.right + "px";
-	          }
-	        }
-	      };
-	      moved = false;
-	      if ((same.page.top || same.page.bottom) && (same.page.left || same.page.right)) {
-	        css.position = 'absolute';
-	        transcribe(same.page, position.page);
-	      } else if ((same.viewport.top || same.viewport.bottom) && (same.viewport.left || same.viewport.right)) {
-	        css.position = 'fixed';
-	        transcribe(same.viewport, position.viewport);
-	      } else if ((same.offset != null) && same.offset.top && same.offset.left) {
-	        css.position = 'absolute';
-	        offsetParent = this.cache('target-offsetparent', function() {
-	          return getOffsetParent(_this.target);
-	        });
-	        if (getOffsetParent(this.element) !== offsetParent) {
-	          defer(function() {
-	            _this.element.parentNode.removeChild(_this.element);
-	            return offsetParent.appendChild(_this.element);
-	          });
-	        }
-	        transcribe(same.offset, position.offset);
-	        moved = true;
-	      } else {
-	        css.position = 'absolute';
-	        transcribe({
-	          top: true,
-	          left: true
-	        }, position.page);
-	      }
-	      if (!moved && this.element.parentNode.tagName !== 'BODY') {
-	        this.element.parentNode.removeChild(this.element);
-	        document.body.appendChild(this.element);
-	      }
-	      writeCSS = {};
-	      write = false;
-	      for (key in css) {
-	        val = css[key];
-	        elVal = this.element.style[key];
-	        if (elVal !== '' && val !== '' && (key === 'top' || key === 'left' || key === 'bottom' || key === 'right')) {
-	          elVal = parseFloat(elVal);
-	          val = parseFloat(val);
-	        }
-	        if (elVal !== val) {
-	          write = true;
-	          writeCSS[key] = css[key];
-	        }
-	      }
-	      if (write) {
-	        return defer(function() {
-	          return extend(_this.element.style, writeCSS);
-	        });
-	      }
-	    };
-
-	    return _Tether;
-
-	  })();
-
-	  Tether.position = position;
-
-	  this.Tether = extend(_Tether, Tether);
-
-	}).call(this);
-
-	(function() {
-	  var BOUNDS_FORMAT, MIRROR_ATTACH, defer, extend, getBoundingRect, getBounds, getOuterSize, getSize, updateClasses, _ref,
-	    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-	  _ref = this.Tether.Utils, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getSize = _ref.getSize, extend = _ref.extend, updateClasses = _ref.updateClasses, defer = _ref.defer;
-
-	  MIRROR_ATTACH = {
-	    left: 'right',
-	    right: 'left',
-	    top: 'bottom',
-	    bottom: 'top',
-	    middle: 'middle'
-	  };
-
-	  BOUNDS_FORMAT = ['left', 'top', 'right', 'bottom'];
-
-	  getBoundingRect = function(tether, to) {
-	    var i, pos, side, size, style, _i, _len;
-	    if (to === 'scrollParent') {
-	      to = tether.scrollParent;
-	    } else if (to === 'window') {
-	      to = [pageXOffset, pageYOffset, innerWidth + pageXOffset, innerHeight + pageYOffset];
-	    }
-	    if (to === document) {
-	      to = to.documentElement;
-	    }
-	    if (to.nodeType != null) {
-	      pos = size = getBounds(to);
-	      style = getComputedStyle(to);
-	      to = [pos.left, pos.top, size.width + pos.left, size.height + pos.top];
-	      for (i = _i = 0, _len = BOUNDS_FORMAT.length; _i < _len; i = ++_i) {
-	        side = BOUNDS_FORMAT[i];
-	        side = side[0].toUpperCase() + side.substr(1);
-	        if (side === 'Top' || side === 'Left') {
-	          to[i] += parseFloat(style["border" + side + "Width"]);
-	        } else {
-	          to[i] -= parseFloat(style["border" + side + "Width"]);
-	        }
-	      }
-	    }
-	    return to;
-	  };
-
-	  this.Tether.modules.push({
-	    position: function(_arg) {
-	      var addClasses, allClasses, attachment, bounds, changeAttachX, changeAttachY, cls, constraint, eAttachment, height, left, oob, oobClass, p, pin, pinned, pinnedClass, removeClass, side, tAttachment, targetAttachment, targetHeight, targetSize, targetWidth, to, top, width, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
-	        _this = this;
-	      top = _arg.top, left = _arg.left, targetAttachment = _arg.targetAttachment;
-	      if (!this.options.constraints) {
-	        return true;
-	      }
-	      removeClass = function(prefix) {
-	        var side, _i, _len, _results;
-	        _this.removeClass(prefix);
-	        _results = [];
-	        for (_i = 0, _len = BOUNDS_FORMAT.length; _i < _len; _i++) {
-	          side = BOUNDS_FORMAT[_i];
-	          _results.push(_this.removeClass("" + prefix + "-" + side));
-	        }
-	        return _results;
-	      };
-	      _ref1 = this.cache('element-bounds', function() {
-	        return getBounds(_this.element);
-	      }), height = _ref1.height, width = _ref1.width;
-	      if (width === 0 && height === 0 && (this.lastSize != null)) {
-	        _ref2 = this.lastSize, width = _ref2.width, height = _ref2.height;
-	      }
-	      targetSize = this.cache('target-bounds', function() {
-	        return _this.getTargetBounds();
-	      });
-	      targetHeight = targetSize.height;
-	      targetWidth = targetSize.width;
-	      tAttachment = {};
-	      eAttachment = {};
-	      allClasses = [this.getClass('pinned'), this.getClass('out-of-bounds')];
-	      _ref3 = this.options.constraints;
-	      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-	        constraint = _ref3[_i];
-	        if (constraint.outOfBoundsClass) {
-	          allClasses.push(constraint.outOfBoundsClass);
-	        }
-	        if (constraint.pinnedClass) {
-	          allClasses.push(constraint.pinnedClass);
-	        }
-	      }
-	      for (_j = 0, _len1 = allClasses.length; _j < _len1; _j++) {
-	        cls = allClasses[_j];
-	        _ref4 = ['left', 'top', 'right', 'bottom'];
-	        for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
-	          side = _ref4[_k];
-	          allClasses.push("" + cls + "-" + side);
-	        }
-	      }
-	      addClasses = [];
-	      tAttachment = extend({}, targetAttachment);
-	      eAttachment = extend({}, this.attachment);
-	      _ref5 = this.options.constraints;
-	      for (_l = 0, _len3 = _ref5.length; _l < _len3; _l++) {
-	        constraint = _ref5[_l];
-	        to = constraint.to, attachment = constraint.attachment, pin = constraint.pin;
-	        if (attachment == null) {
-	          attachment = '';
-	        }
-	        if (__indexOf.call(attachment, ' ') >= 0) {
-	          _ref6 = attachment.split(' '), changeAttachY = _ref6[0], changeAttachX = _ref6[1];
-	        } else {
-	          changeAttachX = changeAttachY = attachment;
-	        }
-	        bounds = getBoundingRect(this, to);
-	        if (changeAttachY === 'target' || changeAttachY === 'both') {
-	          if (top < bounds[1] && tAttachment.top === 'top') {
-	            top += targetHeight;
-	            tAttachment.top = 'bottom';
-	          }
-	          if (top + height > bounds[3] && tAttachment.top === 'bottom') {
-	            top -= targetHeight;
-	            tAttachment.top = 'top';
-	          }
-	        }
-	        if (changeAttachY === 'together') {
-	          if (top < bounds[1] && tAttachment.top === 'top') {
-	            if (eAttachment.top === 'bottom') {
-	              top += targetHeight;
-	              tAttachment.top = 'bottom';
-	              top += height;
-	              eAttachment.top = 'top';
-	            } else if (eAttachment.top === 'top') {
-	              top += targetHeight;
-	              tAttachment.top = 'bottom';
-	              top -= height;
-	              eAttachment.top = 'bottom';
-	            }
-	          }
-	          if (top + height > bounds[3] && tAttachment.top === 'bottom') {
-	            if (eAttachment.top === 'top') {
-	              top -= targetHeight;
-	              tAttachment.top = 'top';
-	              top -= height;
-	              eAttachment.top = 'bottom';
-	            } else if (eAttachment.top === 'bottom') {
-	              top -= targetHeight;
-	              tAttachment.top = 'top';
-	              top += height;
-	              eAttachment.top = 'top';
-	            }
-	          }
-	          if (tAttachment.top === 'middle') {
-	            if (top + height > bounds[3] && eAttachment.top === 'top') {
-	              top -= height;
-	              eAttachment.top = 'bottom';
-	            } else if (top < bounds[1] && eAttachment.top === 'bottom') {
-	              top += height;
-	              eAttachment.top = 'top';
-	            }
-	          }
-	        }
-	        if (changeAttachX === 'target' || changeAttachX === 'both') {
-	          if (left < bounds[0] && tAttachment.left === 'left') {
-	            left += targetWidth;
-	            tAttachment.left = 'right';
-	          }
-	          if (left + width > bounds[2] && tAttachment.left === 'right') {
-	            left -= targetWidth;
-	            tAttachment.left = 'left';
-	          }
-	        }
-	        if (changeAttachX === 'together') {
-	          if (left < bounds[0] && tAttachment.left === 'left') {
-	            if (eAttachment.left === 'right') {
-	              left += targetWidth;
-	              tAttachment.left = 'right';
-	              left += width;
-	              eAttachment.left = 'left';
-	            } else if (eAttachment.left === 'left') {
-	              left += targetWidth;
-	              tAttachment.left = 'right';
-	              left -= width;
-	              eAttachment.left = 'right';
-	            }
-	          } else if (left + width > bounds[2] && tAttachment.left === 'right') {
-	            if (eAttachment.left === 'left') {
-	              left -= targetWidth;
-	              tAttachment.left = 'left';
-	              left -= width;
-	              eAttachment.left = 'right';
-	            } else if (eAttachment.left === 'right') {
-	              left -= targetWidth;
-	              tAttachment.left = 'left';
-	              left += width;
-	              eAttachment.left = 'left';
-	            }
-	          } else if (tAttachment.left === 'center') {
-	            if (left + width > bounds[2] && eAttachment.left === 'left') {
-	              left -= width;
-	              eAttachment.left = 'right';
-	            } else if (left < bounds[0] && eAttachment.left === 'right') {
-	              left += width;
-	              eAttachment.left = 'left';
-	            }
-	          }
-	        }
-	        if (changeAttachY === 'element' || changeAttachY === 'both') {
-	          if (top < bounds[1] && eAttachment.top === 'bottom') {
-	            top += height;
-	            eAttachment.top = 'top';
-	          }
-	          if (top + height > bounds[3] && eAttachment.top === 'top') {
-	            top -= height;
-	            eAttachment.top = 'bottom';
-	          }
-	        }
-	        if (changeAttachX === 'element' || changeAttachX === 'both') {
-	          if (left < bounds[0] && eAttachment.left === 'right') {
-	            left += width;
-	            eAttachment.left = 'left';
-	          }
-	          if (left + width > bounds[2] && eAttachment.left === 'left') {
-	            left -= width;
-	            eAttachment.left = 'right';
-	          }
-	        }
-	        if (typeof pin === 'string') {
-	          pin = (function() {
-	            var _len4, _m, _ref7, _results;
-	            _ref7 = pin.split(',');
-	            _results = [];
-	            for (_m = 0, _len4 = _ref7.length; _m < _len4; _m++) {
-	              p = _ref7[_m];
-	              _results.push(p.trim());
-	            }
-	            return _results;
-	          })();
-	        } else if (pin === true) {
-	          pin = ['top', 'left', 'right', 'bottom'];
-	        }
-	        pin || (pin = []);
-	        pinned = [];
-	        oob = [];
-	        if (top < bounds[1]) {
-	          if (__indexOf.call(pin, 'top') >= 0) {
-	            top = bounds[1];
-	            pinned.push('top');
-	          } else {
-	            oob.push('top');
-	          }
-	        }
-	        if (top + height > bounds[3]) {
-	          if (__indexOf.call(pin, 'bottom') >= 0) {
-	            top = bounds[3] - height;
-	            pinned.push('bottom');
-	          } else {
-	            oob.push('bottom');
-	          }
-	        }
-	        if (left < bounds[0]) {
-	          if (__indexOf.call(pin, 'left') >= 0) {
-	            left = bounds[0];
-	            pinned.push('left');
-	          } else {
-	            oob.push('left');
-	          }
-	        }
-	        if (left + width > bounds[2]) {
-	          if (__indexOf.call(pin, 'right') >= 0) {
-	            left = bounds[2] - width;
-	            pinned.push('right');
-	          } else {
-	            oob.push('right');
-	          }
-	        }
-	        if (pinned.length) {
-	          pinnedClass = (_ref7 = this.options.pinnedClass) != null ? _ref7 : this.getClass('pinned');
-	          addClasses.push(pinnedClass);
-	          for (_m = 0, _len4 = pinned.length; _m < _len4; _m++) {
-	            side = pinned[_m];
-	            addClasses.push("" + pinnedClass + "-" + side);
-	          }
-	        }
-	        if (oob.length) {
-	          oobClass = (_ref8 = this.options.outOfBoundsClass) != null ? _ref8 : this.getClass('out-of-bounds');
-	          addClasses.push(oobClass);
-	          for (_n = 0, _len5 = oob.length; _n < _len5; _n++) {
-	            side = oob[_n];
-	            addClasses.push("" + oobClass + "-" + side);
-	          }
-	        }
-	        if (__indexOf.call(pinned, 'left') >= 0 || __indexOf.call(pinned, 'right') >= 0) {
-	          eAttachment.left = tAttachment.left = false;
-	        }
-	        if (__indexOf.call(pinned, 'top') >= 0 || __indexOf.call(pinned, 'bottom') >= 0) {
-	          eAttachment.top = tAttachment.top = false;
-	        }
-	        if (tAttachment.top !== targetAttachment.top || tAttachment.left !== targetAttachment.left || eAttachment.top !== this.attachment.top || eAttachment.left !== this.attachment.left) {
-	          this.updateAttachClasses(eAttachment, tAttachment);
-	        }
-	      }
-	      defer(function() {
-	        updateClasses(_this.target, addClasses, allClasses);
-	        return updateClasses(_this.element, addClasses, allClasses);
-	      });
-	      return {
-	        top: top,
-	        left: left
-	      };
-	    }
-	  });
-
-	}).call(this);
-
-	(function() {
-	  var defer, getBounds, updateClasses, _ref;
-
-	  _ref = this.Tether.Utils, getBounds = _ref.getBounds, updateClasses = _ref.updateClasses, defer = _ref.defer;
-
-	  this.Tether.modules.push({
-	    position: function(_arg) {
-	      var abutted, addClasses, allClasses, bottom, height, left, right, side, sides, targetPos, top, width, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref1, _ref2, _ref3, _ref4, _ref5,
-	        _this = this;
-	      top = _arg.top, left = _arg.left;
-	      _ref1 = this.cache('element-bounds', function() {
-	        return getBounds(_this.element);
-	      }), height = _ref1.height, width = _ref1.width;
-	      targetPos = this.getTargetBounds();
-	      bottom = top + height;
-	      right = left + width;
-	      abutted = [];
-	      if (top <= targetPos.bottom && bottom >= targetPos.top) {
-	        _ref2 = ['left', 'right'];
-	        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-	          side = _ref2[_i];
-	          if ((_ref3 = targetPos[side]) === left || _ref3 === right) {
-	            abutted.push(side);
-	          }
-	        }
-	      }
-	      if (left <= targetPos.right && right >= targetPos.left) {
-	        _ref4 = ['top', 'bottom'];
-	        for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
-	          side = _ref4[_j];
-	          if ((_ref5 = targetPos[side]) === top || _ref5 === bottom) {
-	            abutted.push(side);
-	          }
-	        }
-	      }
-	      allClasses = [];
-	      addClasses = [];
-	      sides = ['left', 'top', 'right', 'bottom'];
-	      allClasses.push(this.getClass('abutted'));
-	      for (_k = 0, _len2 = sides.length; _k < _len2; _k++) {
-	        side = sides[_k];
-	        allClasses.push("" + (this.getClass('abutted')) + "-" + side);
-	      }
-	      if (abutted.length) {
-	        addClasses.push(this.getClass('abutted'));
-	      }
-	      for (_l = 0, _len3 = abutted.length; _l < _len3; _l++) {
-	        side = abutted[_l];
-	        addClasses.push("" + (this.getClass('abutted')) + "-" + side);
-	      }
-	      defer(function() {
-	        updateClasses(_this.target, addClasses, allClasses);
-	        return updateClasses(_this.element, addClasses, allClasses);
-	      });
-	      return true;
-	    }
-	  });
-
-	}).call(this);
-
-	(function() {
-	  this.Tether.modules.push({
-	    position: function(_arg) {
-	      var left, result, shift, shiftLeft, shiftTop, top, _ref;
-	      top = _arg.top, left = _arg.left;
-	      if (!this.options.shift) {
-	        return;
-	      }
-	      result = function(val) {
-	        if (typeof val === 'function') {
-	          return val.call(this, {
-	            top: top,
-	            left: left
-	          });
-	        } else {
-	          return val;
-	        }
-	      };
-	      shift = result(this.options.shift);
-	      if (typeof shift === 'string') {
-	        shift = shift.split(' ');
-	        shift[1] || (shift[1] = shift[0]);
-	        shiftTop = shift[0], shiftLeft = shift[1];
-	        shiftTop = parseFloat(shiftTop, 10);
-	        shiftLeft = parseFloat(shiftLeft, 10);
-	      } else {
-	        _ref = [shift.top, shift.left], shiftTop = _ref[0], shiftLeft = _ref[1];
-	      }
-	      top += shiftTop;
-	      left += shiftLeft;
-	      return {
-	        top: top,
-	        left: left
-	      };
-	    }
-	  });
-
-	}).call(this);
-
-	return this.Tether;
-
-	}));
-
-
-/***/ },
-/* 250 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-	var DateUtil = __webpack_require__(246);
-	var moment = __webpack_require__(160);
-
-	var DateInput = React.createClass({
-	  displayName: "DateInput",
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      dateFormat: "YYYY-MM-DD"
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      value: this.safeDateFormat(this.props.date)
-	    };
-	  },
-
-	  componentDidMount: function componentDidMount() {
-	    this.toggleFocus(this.props.focus);
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
-	    this.toggleFocus(newProps.focus);
-
-	    this.setState({
-	      value: this.safeDateFormat(newProps.date)
-	    });
-	  },
-
-	  toggleFocus: function toggleFocus(focus) {
-	    if (focus) {
-	      React.findDOMNode(this.refs.input).focus();
-	    } else {
-	      React.findDOMNode(this.refs.input).blur();
-	    }
-	  },
-
-	  handleChange: function handleChange(event) {
-	    var date = moment(event.target.value, this.props.dateFormat, true);
-
-	    this.setState({
-	      value: event.target.value
-	    });
-
-	    if (date.isValid()) {
-	      this.props.setSelected(new DateUtil(date));
-	    } else if (event.target.value === "") {
-	      this.props.clearSelected();
-	    }
-	  },
-
-	  safeDateFormat: function safeDateFormat(date) {
-	    return !!date ? date.format(this.props.dateFormat) : null;
-	  },
-
-	  handleKeyDown: function handleKeyDown(event) {
-	    switch (event.key) {
-	      case "Enter":
-	        event.preventDefault();
-	        this.props.handleEnter();
-	        break;
-	    }
-	  },
-
-	  handleClick: function handleClick(event) {
-	    this.props.handleClick(event);
-	  },
-
-	  render: function render() {
-	    return React.createElement("input", {
-	      ref: "input",
-	      type: "text",
-	      name: this.props.name,
-	      value: this.state.value,
-	      onClick: this.handleClick,
-	      onKeyDown: this.handleKeyDown,
-	      onFocus: this.props.onFocus,
-	      onChange: this.handleChange,
-	      className: "datepicker__input",
-	      placeholder: this.props.placeholderText });
-	  }
-	});
-
-	module.exports = DateInput;
 
 /***/ }
 /******/ ]);

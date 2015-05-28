@@ -55,17 +55,20 @@ var exampleComponent = React.createClass({
       <DatePicker
         key="example2"
         dateFormat="YYYY/MM/DD"
+        locale="nb"
         selected={this.state.end_date}
         onChange={this.handleEndDateChange}
       />
       <DatePicker
         key="example3"
+        locale="nb"
         selected={this.state.new_date}
         onChange={this.handleNewDateChange}
         placeholderText="Click to select a date"
       />
       <DatePicker
         key="example4"
+        locale="nb"
         selected={this.state.bound_date}
         onChange={this.handleBoundDateChange}
         minDate={moment()}
@@ -74,6 +77,7 @@ var exampleComponent = React.createClass({
       />
       <DatePicker
         key="example5"
+        locale="nb"
         selected={this.state.example5Selected}
         onChange={this.handleExample5Change}
         weekStart="0"

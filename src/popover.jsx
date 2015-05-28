@@ -1,6 +1,7 @@
 var React = require('react');
 
 var Popover = React.createClass({
+
   displayName: 'Popover',
 
   componentWillMount: function() {
@@ -10,6 +11,7 @@ var Popover = React.createClass({
     this._popoverElement = popoverContainer;
 
     document.querySelector('body').appendChild(this._popoverElement);
+
   },
 
   componentDidMount: function() {

@@ -1,7 +1,7 @@
 var React = require('react');
-var moment = require('moment');
 
 var Day = React.createClass({
+
   handleClick: function(event) {
     if (this.props.disabled) return;
 
