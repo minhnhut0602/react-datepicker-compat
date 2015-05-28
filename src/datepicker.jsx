@@ -4,21 +4,26 @@ var DateUtil = require('./util/date');
 var Calendar = require('./calendar');
 var DateInput = require('./date_input');
 var moment = require('moment');
+var clone = require('clone');
 
 var DatePicker = React.createClass({
   getDefaultProps: function() {
     return {
-      weekdays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-      locale: 'en',
-      dateFormatCallendar: "MMMM YYYY",
+      weekdays: [moment.weekdaysMin()[0], moment.weekdaysMin()[1], moment.weekdaysMin()[2], moment.weekdaysMin()[3], moment.weekdaysMin()[4], moment.weekdaysMin()[5], moment.weekdaysMin()[6]],
+      locale: 'nb',
+      dateFormatCallendar: "MMMM YYYY"
+    };
+  },
+  getInitialState: function() {
+    return {
+      focus: false,
       moment: moment
     };
   },
-
-  getInitialState: function() {
-    return {
-      focus: false
-    };
+  componentWillMount: function() {
+    var newMoment = clone(moment);
+    newMoment.locale(this.props.locale);
+    this.setState({moment:newMoment});
   },
 
   handleFocus: function() {
@@ -58,13 +63,14 @@ var DatePicker = React.createClass({
   },
 
   calendar: function() {
+
     if (this.state.focus) {
       return (
         <Popover>
           <Calendar
             weekdays={this.props.weekdays}
             locale={this.props.locale}
-            moment={this.props.moment}
+            moment={this.state.moment}
             dateFormat={this.props.dateFormatCallendar}
             selected={this.props.selected}
             onSelect={this.handleSelect}
@@ -78,12 +84,13 @@ var DatePicker = React.createClass({
   },
 
   render: function() {
-
     return (
       <div>
         <DateInput
           name={this.props.name}
           date={this.props.selected}
+          locale={this.props.locale}
+          moment={this.state.moment}
           dateFormat={this.props.dateFormat}
           focus={this.state.focus}
           onFocus={this.handleFocus}

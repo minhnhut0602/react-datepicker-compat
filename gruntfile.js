@@ -29,7 +29,7 @@ module.exports = function(grunt) {
       },
       unmin: {
         files: {
-          'dist/react-datepicker.min.css': 'src/stylesheets/datepicker.scss'
+          'dist/react-datepicker-compat.min.css': 'src/stylesheets/datepicker.scss'
         },
         options: {
           sourcemap: 'none',
@@ -101,12 +101,12 @@ module.exports = function(grunt) {
       },
       unmin: mergeWebpackConfig({
         output: {
-          filename: 'react-datepicker.js'
+          filename: 'react-datepicker-compat.js'
         }
       }),
       min: mergeWebpackConfig({
         output: {
-          filename: 'react-datepicker.min.js'
+          filename: 'react-datepicker-compat.min.js'
         },
         plugins: [
           new webpack.optimize.UglifyJsPlugin({

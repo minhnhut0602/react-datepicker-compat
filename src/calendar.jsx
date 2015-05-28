@@ -1,9 +1,16 @@
 var React = require('react');
 var Day = require('./day');
 var DateUtil = require('./util/date');
+var cloneFunction = require('clone');
 
 var Calendar = React.createClass({
   mixins: [require('react-onclickoutside')],
+
+  propTypes:{
+    weekStart: React.PropTypes.string,
+    locale: React.PropTypes.string.isRequired,
+    moment: React.PropTypes.func.isRequired
+  },
 
   handleClickOutside: function() {
     this.props.hideCalendar();
@@ -15,17 +22,22 @@ var Calendar = React.createClass({
     };
   },
 
-  getDefaultProps: function() {
-    return {
-      weekStart: 1
-    };
-  },
-
-  componentWillMount: function() {
+  componentDidMount: function() {
     this.initializeMomentLocale();
   },
 
+
   componentWillReceiveProps: function(nextProps) {
+
+    if(!this.state.moment){
+      var newMoment = cloneFunction(nextProps.moment);
+      newMoment.locale(nextProps.locale);
+      this.setState({
+        moment:newMoment,
+        date: new DateUtil(this.props.selected).safeClone(newMoment())
+      });
+    }
+
     if (nextProps.selected === null) { return; }
 
     // When the selected date changed
@@ -37,15 +49,17 @@ var Calendar = React.createClass({
   },
 
   initializeMomentLocale: function() {
+
     var weekdays = this.props.weekdays.slice(0);
     weekdays = weekdays.concat(weekdays.splice(0, this.props.weekStart));
-
-    this.props.moment.locale(this.props.locale, {
-      week: {
-        dow: this.props.weekStart
-      },
-      weekdaysMin : weekdays
-    });
+    if(this.state.moment){
+      this.state.moment.locale(this.props.locale, {
+        week: {
+          dow: this.props.weekStart
+        },
+        weekdaysMin : weekdays
+      });
+    }
   },
 
   increaseMonth: function() {
@@ -89,6 +103,8 @@ var Calendar = React.createClass({
       <Day
         key={key}
         day={day}
+        moment={this.props.moment}
+        locale={this.props.locale}
         date={this.state.date}
         onClick={this.handleDayClick.bind(this, day)}
         selected={new DateUtil(this.props.selected)}
@@ -105,19 +121,18 @@ var Calendar = React.createClass({
       return <div className="datepicker__day" key={key}>{day}</div>;
     });
   },
-
   render: function() {
     return (
       <div className="datepicker">
         <div className="datepicker__triangle"></div>
         <div className="datepicker__header">
-          <a className="datepicker__navigation datepicker__navigation--previous"
+          <a className="datepicker__navigation datepicker__navigation--previous ts-icon-arrow-left"
               onClick={this.decreaseMonth}>
           </a>
           <span className="datepicker__current-month">
             {this.state.date.localeFormat(this.props.locale, this.props.dateFormat)}
           </span>
-          <a className="datepicker__navigation datepicker__navigation--next"
+          <a className="datepicker__navigation datepicker__navigation--next ts-icon-arrow-right"
               onClick={this.increaseMonth}>
           </a>
           <div>

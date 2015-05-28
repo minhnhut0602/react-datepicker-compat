@@ -1,8 +1,13 @@
 var React = require('react');
 var DateUtil = require('./util/date');
-var moment = require('moment');
+var cloneFunction = require('clone');
 
 var DateInput = React.createClass({
+
+  propTypes:{
+    locale: React.PropTypes.string,
+    moment: React.PropTypes.func.isRequired
+  },
 
   getDefaultProps: function() {
     return {
@@ -20,24 +25,36 @@ var DateInput = React.createClass({
     this.toggleFocus(this.props.focus);
   },
 
-  componentWillReceiveProps: function(newProps) {
-    this.toggleFocus(newProps.focus);
-
+  componentWillReceiveProps: function(nextProps) {
+    this.toggleFocus(nextProps.focus);
+    var moment = cloneFunction(this.props.moment);
+    moment.locale(nextProps.locale);
     this.setState({
-      value: this.safeDateFormat(newProps.date)
-    });
+      moment:moment,
+      value: this.safeDateFormat(nextProps.date)
+   });
+  
   },
 
   toggleFocus: function(focus) {
     if (focus) {
+      if('findDOMNode' in React){
       React.findDOMNode(this.refs.input).focus();
+      } else {
+        this.refs.input.getDOMNode().focus();
+      }
     } else {
+      if('findDOMNode' in React){
       React.findDOMNode(this.refs.input).blur();
+      } else {
+        this.refs.input.getDOMNode().blur();
+      }
+
     }
   },
 
   handleChange: function(event) {
-    var date = moment(event.target.value, this.props.dateFormat, true);
+    var date = this.state.moment(event.target.value, this.props.dateFormat, true);
 
     this.setState({
       value: event.target.value
