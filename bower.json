@@ -12,7 +12,7 @@
   },
   "license": "MIT",
   "main": [
-    "dist/react-datepicker.min.js",
+    "dist/react-datepicker-compat.min.js",
     "dist/react-datepicker.min.css"
   ],
   "keywords": [

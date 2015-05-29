@@ -27,7 +27,7 @@ describe('DateUtil', function() {
       expect(date.isBefore(other_date)).toBe(false);
     });
   });
-
+  
   describe('#isAfter', function() {
     it('returns true when the date is after the passed date', function() {
       var date = new DateUtil(moment('2014-02-09'));

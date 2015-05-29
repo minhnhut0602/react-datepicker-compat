@@ -8,6 +8,7 @@ var Calendar = React.createClass({
 
   propTypes:{
     weekStart: React.PropTypes.string,
+    id: React.PropTypes.string,
     locale: React.PropTypes.string.isRequired,
     moment: React.PropTypes.func.isRequired
   },
@@ -50,14 +51,11 @@ var Calendar = React.createClass({
 
   initializeMomentLocale: function() {
 
-    var weekdays = this.props.weekdays.slice(0);
-    weekdays = weekdays.concat(weekdays.splice(0, this.props.weekStart));
     if(this.state.moment){
       this.state.moment.locale(this.props.locale, {
         week: {
           dow: this.props.weekStart
-        },
-        weekdaysMin : weekdays
+        }
       });
     }
   },
@@ -105,6 +103,7 @@ var Calendar = React.createClass({
         day={day}
         moment={this.state.moment}
         locale={this.props.locale}
+        id={this.props.id}
         date={this.state.date}
         onClick={this.handleDayClick.bind(this, day)}
         selected={new DateUtil(this.props.selected)}

@@ -2,7 +2,7 @@ require('babel/register');
 
 var React = require('react');
 var moment = require('moment');
-var DatePicker = require('../dist/react-datepicker.js');
+var DatePicker = require('../dist/react-datepicker-compat.js');
 
 var Example = React.createClass({
   getInitialState: function () {
@@ -13,6 +13,7 @@ var Example = React.createClass({
     return React.createElement(
       DatePicker,
       {
+        locale: 'nb',
         selected: this.state.date,
         onChange: this.handleChange
       }

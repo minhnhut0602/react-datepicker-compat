@@ -5,6 +5,9 @@ var cloneFunction = require('clone');
 var DateInput = React.createClass({
 
   propTypes:{
+    name: React.PropTypes.string,
+    placeholderText: React.PropTypes.string,
+    id: React.PropTypes.string.isRequired,
     locale: React.PropTypes.string,
     moment: React.PropTypes.func.isRequired
   },
@@ -89,6 +92,7 @@ var DateInput = React.createClass({
       ref="input"
       type="text"
       name={this.props.name}
+      id={this.props.id}
       value={this.state.value}
       onClick={this.handleClick}
       onKeyDown={this.handleKeyDown}
