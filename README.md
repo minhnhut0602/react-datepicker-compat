@@ -6,6 +6,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 
 - Supports React 0.12
 - Fixed an issue where changing locale didn't work 
+- Added a node server to serve the example folder
 
 ![](https://cloud.githubusercontent.com/assets/1412392/5339491/c40de124-7ee1-11e4-9f07-9276e2545f27.png)
 
@@ -23,9 +24,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 
 Installing is really simple and can be done in multiple ways:
 
-- Install with Bower: `bower install react-date-picker`
-- Install with npm: `npm install react-datepicker --save`
-- Install with Bundler: `bundle install rails-assets-react-date-picker`
+- Install with npm: `npm install react-datepicker-compat --save`
 
 ## Local Development
 
@@ -33,12 +32,10 @@ Installing is really simple and can be done in multiple ways:
 - Install Bower Packages `bower install`
 - Install packages `npm install`
 - Run `grunt watch` in order to watch for local changes and run tests/build the code.
-- Start a static webserver `python -m SimpleHTTPServer`
-- And visit `localhost:8000/example` to see the example.
-
-You can also test server side rendering:
-
-- `$ node example/node-rendering.js`
+- Start a node webserver:
+	- `$ cd example`
+	- `$ node server.js`
+	- And visit `localhost:8000` to see the example.
 
 You should see the HTML returned.
 
