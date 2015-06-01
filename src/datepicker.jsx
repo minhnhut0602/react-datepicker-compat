@@ -109,7 +109,6 @@ var DatePicker = React.createClass({
     case "zh-cn": require("moment/locale/zh-cn"); break;
     case "zh-tw": require("moment/locale/zh-tw"); break;
     }
-    console.log(moment.weekdaysMin()[0]);
 
     newMoment.locale(this.props.locale);
     this.setState({moment:newMoment,locale:this.props.locale});
