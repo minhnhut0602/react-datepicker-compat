@@ -10,7 +10,7 @@ browserify.settings({
 });
 
 // serve client code via browserify and reactify
-app.get('/bundle.js', browserify('./boot.jsx'));
+app.get('/bundle.js', browserify(__dirname+'/boot.jsx'));
 
 // html
 app.get('*.html', function (req, res) {
