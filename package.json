@@ -2,7 +2,7 @@
   "author": "Sven Anders Robbestad",
   "name": "react-datepicker-compat",
   "description": "A fork of a simple and reusable datepicker component for React",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "license": "MIT",
   "homepage": "https://github.com/svenanders/react-datepicker-compat",
   "main": "dist/react-datepicker-compat.min.js",
