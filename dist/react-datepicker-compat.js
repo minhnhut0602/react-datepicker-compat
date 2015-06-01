@@ -71,7 +71,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getDefaultProps: function getDefaultProps() {
 	    return {
 	      id: randomData.randomGuid(4),
-	      dateFormatCallendar: "MMMM YYYY"
+	      dateFormatCalendar: "MMMM YYYY"
 	    };
 	  },
 	  getInitialState: function getInitialState() {
@@ -250,7 +250,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      case "zh-tw":
 	        __webpack_require__(102);break;
 	    }
-	    console.log(moment.weekdaysMin()[0]);
 
 	    newMoment.locale(this.props.locale);
 	    this.setState({ moment: newMoment, locale: this.props.locale });
@@ -302,7 +301,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          weekdays: this.props.weekdays,
 	          locale: this.state.locale,
 	          moment: this.state.moment,
-	          dateFormat: this.props.dateFormatCallendar,
+	          dateFormat: this.props.dateFormatCalendar,
 	          selected: this.props.selected,
 	          onSelect: this.handleSelect,
 	          id: this.props.id,
@@ -2396,8 +2395,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  getInitialState: function getInitialState() {
+	    var moment = cloneFunction(this.props.moment);
+	    moment.locale(nextProps.locale);
 	    return {
-	      value: this.safeDateFormat(this.props.date)
+	      value: this.safeDateFormat(this.props.date),
+	      moment: moment
 	    };
 	  },
 
@@ -2407,10 +2409,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    this.toggleFocus(nextProps.focus);
-	    var moment = cloneFunction(this.props.moment);
-	    moment.locale(nextProps.locale);
 	    this.setState({
-	      moment: moment,
 	      value: this.safeDateFormat(nextProps.date)
 	    });
 	  },

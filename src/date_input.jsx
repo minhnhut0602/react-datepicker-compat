@@ -21,7 +21,6 @@ var DateInput = React.createClass({
   getInitialState: function() {
     var moment = cloneFunction(this.props.moment);
     moment.locale(nextProps.locale);
-
     return {
       value: this.safeDateFormat(this.props.date),
       moment: moment
