@@ -29,11 +29,8 @@ This is a fork of the original react-datepicker. The differences are as follows:
 - Install packages `npm install`
 - Run `grunt watch` in order to watch for local changes and run tests/build the code.
 - Start a node webserver:
-	- `$ cd example`
-	- `$ node server.js`
-	- And visit `localhost:8000` to see the example.
-
-You should see the HTML returned.
+	- `$ node example/server.js`
+- Visit `localhost:8000` to access the example.
 
 To run tests, simply run `npm test`.
 
