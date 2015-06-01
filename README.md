@@ -6,7 +6,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 
 - Supports React 0.12
 - Fixed the following issue: Changing locale doesn't work 
-- Added a node server to serve the example folder
+- Added a new node server.js to serve the example folder
 - Removed hardcoded weekdays
 
 ![](https://cloud.githubusercontent.com/assets/1412392/5339491/c40de124-7ee1-11e4-9f07-9276e2545f27.png)
@@ -19,8 +19,6 @@ This is a fork of the original react-datepicker. The differences are as follows:
 - Set date format for callendar: `dateFormatCalendar: "YYYY/MM/DD"`
 
 ## Installation
-
-Installing is really simple and can be done in multiple ways:
 
 - Install with npm: `npm install react-datepicker-compat --save`
 
