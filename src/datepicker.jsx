@@ -13,7 +13,7 @@ var DatePicker = React.createClass({
   getDefaultProps: function() {
     return {
       id: randomData.randomGuid(4),
-      dateFormatCallendar: "MMMM YYYY"
+      dateFormatCalendar: "MMMM YYYY"
     };
   },
   getInitialState: function() {
@@ -159,7 +159,7 @@ var DatePicker = React.createClass({
             weekdays={this.props.weekdays}
             locale={this.state.locale}
             moment={this.state.moment}
-            dateFormat={this.props.dateFormatCallendar}
+            dateFormat={this.props.dateFormatCalendar}
             selected={this.props.selected}
             onSelect={this.handleSelect}
             id={this.props.id}

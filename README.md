@@ -5,8 +5,9 @@ A simple and reusable datepicker component for React ([Demo](https://sleepy-plai
 This is a fork of the original react-datepicker. The differences are as follows:
 
 - Supports React 0.12
-- Fixed an issue where changing locale didn't work 
+- Fixed the following issue: Changing locale doesn't work 
 - Added a node server to serve the example folder
+- Removed hardcoded weekdays
 
 ![](https://cloud.githubusercontent.com/assets/1412392/5339491/c40de124-7ee1-11e4-9f07-9276e2545f27.png)
 
@@ -15,10 +16,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 - Change date format by passing a different date format in the props: `dateFormat: "YYYY/MM/DD"`
 - Add placeholder text: `placeholderText: 'Click to select a date'` (Defaults to the selected date when no placeholder text is added)
 - Give users a predefined date range: `minDate: moment()` & `maxDate: moment().add(5, 'days')` (this gives users the ability to select a date between today and 5 days in the future)
-- Set custom moment.js instance (could have defined custom locale settings): `moment: require('./foo/moment')`
-- Set custom locale settings for locale: `locale: "cs"`
-- Set date format for callendar: `dateFormatCallendar: "YYYY/MM/DD"`
-- Set custom weekdays (for locale days): `weekdays: ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So']`
+- Set date format for callendar: `dateFormatCalendar: "YYYY/MM/DD"`
 
 ## Installation
 
@@ -44,3 +42,4 @@ To run tests, simply run `npm test`.
 ## License
 
 Copyright (c) 2014 HackerOne Inc. and individual contributors. Licensed under MIT license, see [LICENSE](LICENSE) for the full license.
+Changes in this fork (c) 2015 Sven A Robbestad. Licensed under MIT license
