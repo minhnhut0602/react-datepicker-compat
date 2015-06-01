@@ -16,7 +16,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 - Change date format by passing a different date format in the props: `dateFormat: "YYYY/MM/DD"`
 - Add placeholder text: `placeholderText: 'Click to select a date'` (Defaults to the selected date when no placeholder text is added)
 - Give users a predefined date range: `minDate: moment()` & `maxDate: moment().add(5, 'days')` (this gives users the ability to select a date between today and 5 days in the future)
-- Set date format for callendar: `dateFormatCalendar: "YYYY/MM/DD"`
+- Set date format for calendar: `dateFormatCalendar: "YYYY/MM/DD"`
 
 ## Installation
 
