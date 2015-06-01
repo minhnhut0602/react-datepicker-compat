@@ -2396,7 +2396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  getInitialState: function getInitialState() {
 	    var moment = cloneFunction(this.props.moment);
-	    moment.locale(nextProps.locale);
+	    moment.locale(this.props.locale);
 	    return {
 	      value: this.safeDateFormat(this.props.date),
 	      moment: moment
