@@ -19,7 +19,7 @@ app.get('*.html', function (req, res) {
 
 // css
 app.get('*.css', function (req, res) {
-    res.sendFile(__dirname+req.path);
+    res.sendFile(__dirname+"/react-datepicker.css");
 });
 
 // Everything else

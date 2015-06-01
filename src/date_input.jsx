@@ -9,9 +9,10 @@ var DateInput = React.createClass({
     placeholderText: React.PropTypes.string,
     id: React.PropTypes.string.isRequired,
     locale: React.PropTypes.string,
+    date: React.PropTypes.object.isRequired,
     moment: React.PropTypes.func.isRequired
   },
-
+  
   getDefaultProps: function() {
     return {
       dateFormat: 'YYYY-MM-DD'
@@ -26,7 +27,7 @@ var DateInput = React.createClass({
       moment: moment
     };
   },
-  
+
   componentDidMount: function() {
     this.toggleFocus(this.props.focus);
   },
