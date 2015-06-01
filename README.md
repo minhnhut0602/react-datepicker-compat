@@ -9,7 +9,7 @@ This is a fork of the original react-datepicker. The differences are as follows:
 - Added a new node server.js to serve the example folder
 - Removed hardcoded weekdays
 - Added Proptypes
-- Made it work with IE11
+- Made it work with IE9-IE11
 
 ![](https://cloud.githubusercontent.com/assets/1412392/5339491/c40de124-7ee1-11e4-9f07-9276e2545f27.png)
 
