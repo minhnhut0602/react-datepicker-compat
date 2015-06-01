@@ -19,8 +19,12 @@ var DateInput = React.createClass({
   },
 
   getInitialState: function() {
+    var moment = cloneFunction(this.props.moment);
+    moment.locale(nextProps.locale);
+
     return {
-      value: this.safeDateFormat(this.props.date)
+      value: this.safeDateFormat(this.props.date),
+      moment: moment
     };
   },
 
@@ -30,10 +34,7 @@ var DateInput = React.createClass({
 
   componentWillReceiveProps: function(nextProps) {
     this.toggleFocus(nextProps.focus);
-    var moment = cloneFunction(this.props.moment);
-    moment.locale(nextProps.locale);
     this.setState({
-      moment:moment,
       value: this.safeDateFormat(nextProps.date)
    });
   
