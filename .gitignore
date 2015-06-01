@@ -1,4 +1,7 @@
-bower_components
+bower_component*
+demo/
+random-guid/
+bower.json
 node_modules
 .sass-cache
 npm-debug.log

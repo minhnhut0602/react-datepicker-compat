@@ -13,7 +13,8 @@ var DatePicker = React.createClass({
   getDefaultProps: function() {
     return {
       id: randomData.randomGuid(4),
-      dateFormatCalendar: "MMMM YYYY"
+      dateFormatCalendar: "MMMM YYYY",
+      selected:moment()
     };
   },
   getInitialState: function() {
@@ -137,6 +138,7 @@ var DatePicker = React.createClass({
   },
 
   setSelected: function(date) {
+
     this.props.onChange(date.moment());
   },
 

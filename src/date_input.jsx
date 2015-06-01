@@ -9,10 +9,9 @@ var DateInput = React.createClass({
     placeholderText: React.PropTypes.string,
     id: React.PropTypes.string.isRequired,
     locale: React.PropTypes.string,
-    date: React.PropTypes.object.isRequired,
     moment: React.PropTypes.func.isRequired
   },
-  
+
   getDefaultProps: function() {
     return {
       dateFormat: 'YYYY-MM-DD'
@@ -72,7 +71,12 @@ var DateInput = React.createClass({
   },
 
   safeDateFormat: function(date) {
-    return !! date ? date.format(this.props.dateFormat) : null;
+    if('undefined' !== typeof date){
+    if(null !== date){
+      return date.format(this.props.dateFormat);
+    }
+    }
+    return null;
   },
 
   handleKeyDown: function(event) {

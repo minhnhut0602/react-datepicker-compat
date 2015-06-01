@@ -74,7 +74,7 @@ var exampleComponent = React.createClass({
         onChange={this.handleBoundDateChange}
         minDate={moment()}
         maxDate={moment().add(5, 'days')}
-        placeholderText="(fi) Pick a date between today and 5 days in the future"
+        placeholderText="(fi) Pick a date between today and 15 days in the future"
       />
       <DatePicker
         key="example5"

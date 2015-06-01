@@ -71,7 +71,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getDefaultProps: function getDefaultProps() {
 	    return {
 	      id: randomData.randomGuid(4),
-	      dateFormatCalendar: "MMMM YYYY"
+	      dateFormatCalendar: "MMMM YYYY",
+	      selected: moment()
 	    };
 	  },
 	  getInitialState: function getInitialState() {
@@ -278,6 +279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  setSelected: function setSelected(date) {
+
 	    this.props.onChange(date.moment());
 	  },
 
@@ -426,7 +428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether 0.6.5 */
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether 0.7.1 */
 
 
 	(function(root, factory) {
@@ -1016,7 +1018,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	      addClass(this.element, this.getClass('element'));
-	      addClass(this.target, this.getClass('target'));
+	      if (this.options.addTargetClasses !== false) {
+	        addClass(this.target, this.getClass('target'));
+	      }
 	      if (!this.options.attachment) {
 	        throw new Error("Tether Error: You must provide an attachment");
 	      }
@@ -1136,7 +1140,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (position == null) {
 	        position = true;
 	      }
-	      addClass(this.target, this.getClass('enabled'));
+	      if (this.options.addTargetClasses !== false) {
+	        addClass(this.target, this.getClass('enabled'));
+	      }
 	      addClass(this.element, this.getClass('enabled'));
 	      this.enabled = true;
 	      if (this.scrollParent !== document) {
@@ -1212,7 +1218,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	          return;
 	        }
 	        updateClasses(_this.element, _this._addAttachClasses, all);
-	        updateClasses(_this.target, _this._addAttachClasses, all);
+	        if (_this.options.addTargetClasses !== false) {
+	          updateClasses(_this.target, _this._addAttachClasses, all);
+	        }
 	        return _this._addAttachClasses = void 0;
 	      });
 	    };
@@ -1274,10 +1282,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          manualTargetOffset: manualTargetOffset,
 	          scrollbarSize: scrollbarSize
 	        });
-	        if ((ret == null) || typeof ret !== 'object') {
-	          continue;
-	        } else if (ret === false) {
+	        if (ret === false) {
 	          return false;
+	        } else if ((ret == null) || typeof ret !== 'object') {
+	          continue;
 	        } else {
 	          top = ret.top, left = ret.left;
 	        }
@@ -1769,7 +1777,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	      defer(function() {
-	        updateClasses(_this.target, addClasses, allClasses);
+	        if (_this.options.addTargetClasses !== false) {
+	          updateClasses(_this.target, addClasses, allClasses);
+	        }
 	        return updateClasses(_this.element, addClasses, allClasses);
 	      });
 	      return {
@@ -1832,7 +1842,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        addClasses.push("" + (this.getClass('abutted')) + "-" + side);
 	      }
 	      defer(function() {
-	        updateClasses(_this.target, addClasses, allClasses);
+	        if (_this.options.addTargetClasses !== false) {
+	          updateClasses(_this.target, addClasses, allClasses);
+	        }
 	        return updateClasses(_this.element, addClasses, allClasses);
 	      });
 	      return true;
@@ -2385,7 +2397,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    placeholderText: React.PropTypes.string,
 	    id: React.PropTypes.string.isRequired,
 	    locale: React.PropTypes.string,
-	    date: React.PropTypes.object.isRequired,
 	    moment: React.PropTypes.func.isRequired
 	  },
 
@@ -2446,7 +2457,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  safeDateFormat: function safeDateFormat(date) {
-	    return !!date ? date.format(this.props.dateFormat) : null;
+	    if ("undefined" !== typeof date) {
+	      if (null !== date) {
+	        return date.format(this.props.dateFormat);
+	      }
+	    }
+	    return null;
 	  },
 
 	  handleKeyDown: function handleKeyDown(event) {

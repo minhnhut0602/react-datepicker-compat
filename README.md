@@ -26,9 +26,8 @@ This is a fork of the original react-datepicker. The differences are as follows:
 
 ## Local Development
 
-- Install Bower `npm install -g bower`
-- Install Bower Packages `bower install`
-- Install packages `npm install`
+- Install packages:
+	- `npm install`
 - Run `grunt watch` in order to watch for local changes and run tests/build the code.
 - Start a node webserver:
 	- `$ node example/server.js`

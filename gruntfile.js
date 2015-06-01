@@ -45,7 +45,7 @@ module.exports = function(grunt) {
       },
 
       jest: {
-        files: ['src/**/*.jsx', 'src/**/*.js', 'test/**/*.js'],
+        files: ['test/**/*.js'],
         tasks: ['jest']
       },
 
@@ -103,7 +103,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-webpack');
 
   grunt.registerTask('default', ['watch', 'scsslint']);
-  grunt.registerTask('travis', ['jshint',  'scsslint']);//'jest',
+  grunt.registerTask('travis', ['jshint', 'jest', 'scsslint']);
   grunt.registerTask('build', ['jshint', 'scsslint', 'webpack', 'sass']);
 
   grunt.registerTask('jest', require('./grunt/tasks/jest'));

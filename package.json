@@ -54,8 +54,8 @@
     "lodash": "^3.9.3",
     "moment": "^2.10.3",
     "random-guid": "^0.1.4",
-    "react-onclickoutside": "0.2.2",
-    "tether": "^0.6"
+    "react-onclickoutside": "^0.2.4",
+    "tether": "^0.7.2"
   },
   "scripts": {
     "test": "grunt travis --verbose"
