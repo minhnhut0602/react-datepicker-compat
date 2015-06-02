@@ -256,6 +256,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setState({ moment: newMoment, locale: this.props.locale });
 	  },
 
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    if (nextState.focus === this.state.focus) {
+	      return false;
+	    }
+	    return true;
+	  },
+
 	  handleFocus: function handleFocus() {
 	    this.setState({
 	      focus: true
@@ -279,7 +286,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  setSelected: function setSelected(date) {
-
 	    this.props.onChange(date.moment());
 	  },
 
@@ -2440,6 +2446,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.refs.input.getDOMNode().blur();
 	      }
 	    }
+	  },
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    if (nextState.value === this.state.value) {
+	      return false;
+	    }
+	    return true;
 	  },
 
 	  handleChange: function handleChange(event) {

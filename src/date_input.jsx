@@ -55,6 +55,12 @@ var DateInput = React.createClass({
 
     }
   },
+ shouldComponentUpdate: function(nextProps, nextState) {
+    if(nextState.value === this.state.value){
+      return false;
+    }    
+    return true;
+  },
 
   handleChange: function(event) {
     var date = this.state.moment(event.target.value, this.props.dateFormat, true);

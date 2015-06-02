@@ -115,6 +115,13 @@ var DatePicker = React.createClass({
     this.setState({moment:newMoment,locale:this.props.locale});
   },
 
+  shouldComponentUpdate: function(nextProps, nextState) {
+    if(nextState.focus === this.state.focus){
+      return false;
+    }    
+    return true;
+  },
+
   handleFocus: function() {
     this.setState({
       focus: true
@@ -138,7 +145,6 @@ var DatePicker = React.createClass({
   },
 
   setSelected: function(date) {
-
     this.props.onChange(date.moment());
   },
 
