@@ -112,6 +112,7 @@ var DatePicker = React.createClass({
     }
 
     newMoment.locale(this.props.locale);
+    newMoment().format(this.props.dateFormatCalendar);
     this.setState({moment:newMoment,locale:this.props.locale});
   },
 

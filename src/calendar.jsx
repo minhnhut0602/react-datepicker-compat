@@ -29,10 +29,10 @@ var Calendar = React.createClass({
 
 
   componentWillReceiveProps: function(nextProps) {
-
     if(!this.state.moment){
       var newMoment = cloneFunction(nextProps.moment);
       newMoment.locale(nextProps.locale);
+
       this.setState({
         moment:newMoment,
         date: new DateUtil(this.props.selected).safeClone(newMoment())
@@ -50,12 +50,25 @@ var Calendar = React.createClass({
   },
 
   initializeMomentLocale: function() {
-
     if(this.state.moment){
-      this.state.moment.locale(this.props.locale, {
+      var newMoment = this.state.moment;
+      newMoment.locale(this.props.locale, {
         week: {
           dow: this.props.weekStart
         }
+      });
+
+      this.setState({
+        moment:newMoment,
+      });
+    }
+    else {
+      var newMoment = cloneFunction(this.props.moment);
+      newMoment.locale(this.props.locale);
+
+      this.setState({
+        moment:newMoment,
+        date: new DateUtil(this.props.selected).safeClone(newMoment())
       });
     }
   },

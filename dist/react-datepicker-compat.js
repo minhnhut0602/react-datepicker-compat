@@ -253,6 +253,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    newMoment.locale(this.props.locale);
+	    newMoment().format(this.props.dateFormatCalendar);
 	    this.setState({ moment: newMoment, locale: this.props.locale });
 	  },
 
@@ -2039,10 +2040,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-
 	    if (!this.state.moment) {
 	      var newMoment = cloneFunction(nextProps.moment);
 	      newMoment.locale(nextProps.locale);
+
 	      this.setState({
 	        moment: newMoment,
 	        date: new DateUtil(this.props.selected).safeClone(newMoment())
@@ -2062,12 +2063,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  initializeMomentLocale: function initializeMomentLocale() {
-
 	    if (this.state.moment) {
-	      this.state.moment.locale(this.props.locale, {
+	      var newMoment = this.state.moment;
+	      newMoment.locale(this.props.locale, {
 	        week: {
 	          dow: this.props.weekStart
 	        }
+	      });
+
+	      this.setState({
+	        moment: newMoment });
+	    } else {
+	      var newMoment = cloneFunction(this.props.moment);
+	      newMoment.locale(this.props.locale);
+
+	      this.setState({
+	        moment: newMoment,
+	        date: new DateUtil(this.props.selected).safeClone(newMoment())
 	      });
 	    }
 	  },
@@ -2415,6 +2427,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getInitialState: function getInitialState() {
 	    var moment = cloneFunction(this.props.moment);
 	    moment.locale(this.props.locale);
+	    moment().format("YYYY-MM-DD");
+
 	    return {
 	      value: this.safeDateFormat(this.props.date),
 	      moment: moment
@@ -2469,13 +2483,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  safeDateFormat: function safeDateFormat(date) {
-	    if ("undefined" !== typeof date) {
-	      if (null !== date) {
-	        return date.format(this.props.dateFormat);
-	      }
-	    } else {
-	      return this.props.moment.format(this.props.dateFormat);
-	    }
+	    return !!date ? date.format(this.props.dateFormat) : null;
 	  },
 
 	  handleKeyDown: function handleKeyDown(event) {

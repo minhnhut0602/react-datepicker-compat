@@ -21,6 +21,8 @@ var DateInput = React.createClass({
   getInitialState: function() {
     var moment = cloneFunction(this.props.moment);
     moment.locale(this.props.locale);
+    moment().format('YYYY-MM-DD');
+
     return {
       value: this.safeDateFormat(this.props.date),
       moment: moment
@@ -77,15 +79,7 @@ var DateInput = React.createClass({
   },
 
   safeDateFormat: function(date) {
-    if('undefined' !== typeof date){
-    if(null !== date){
-      return date.format(this.props.dateFormat);
-    }
-    }
-    else {
-      return this.props.moment.format(this.props.dateFormat);
-    }
-    
+    return !! date ? date.format(this.props.dateFormat) : null;
   },
 
   handleKeyDown: function(event) {
