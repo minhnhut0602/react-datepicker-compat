@@ -82,7 +82,10 @@ var DateInput = React.createClass({
       return date.format(this.props.dateFormat);
     }
     }
-    return null;
+    else {
+      return this.props.moment.format(this.props.dateFormat);
+    }
+    
   },
 
   handleKeyDown: function(event) {

@@ -2473,8 +2473,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (null !== date) {
 	        return date.format(this.props.dateFormat);
 	      }
+	    } else {
+	      return this.props.moment.format(this.props.dateFormat);
 	    }
-	    return null;
 	  },
 
 	  handleKeyDown: function handleKeyDown(event) {
